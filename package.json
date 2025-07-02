@@ -1,0 +1,51 @@
+{
+  "name": "playwright-orchestrator",
+  "version": "1.0.0",
+  "description": "A robust, scalable, and self-hosted Playwright test orchestrator",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "dev": "concurrently \"npm run dev -w orchestrator\" \"npm run dev -w job-runner\" \"npm run dev -w web-ui\"",
+    "start": "npm run start --workspaces",
+    "test": "npm run test --workspaces",
+    "lint": "eslint packages/*/src/**/*.{ts,tsx} --fix",
+    "format": "prettier --write packages/*/src/**/*.{ts,tsx,json,md}",
+    "type-check": "npm run type-check --workspaces",
+    "clean": "npm run clean --workspaces && rm -rf node_modules",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "db:migrate": "npm run db:migrate -w shared",
+    "db:seed": "npm run db:seed -w shared"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.54.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "keywords": [
+    "playwright",
+    "testing",
+    "orchestrator",
+    "e2e",
+    "automation",
+    "ci-cd"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
+
