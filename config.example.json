@@ -1,0 +1,79 @@
+{
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "database": "playwright_orchestrator",
+    "username": "postgres",
+    "password": "your_password_here",
+    "ssl": false,
+    "max_connections": 20
+  },
+  "s3": {
+    "endpoint": "http://localhost:9000",
+    "region": "us-east-1",
+    "bucket": "playwright-traces",
+    "access_key_id": "minioadmin",
+    "secret_access_key": "minioadmin",
+    "force_path_style": true
+  },
+  "orchestrator": {
+    "port": 3001,
+    "cors_origins": ["http://localhost:3000"],
+    "rate_limit": {
+      "window_ms": 900000,
+      "max_requests": 100
+    },
+    "job_polling": {
+      "interval_ms": 5000,
+      "batch_size": 10
+    }
+  },
+  "job_runner": {
+    "worker_id": "worker-1",
+    "polling_interval_ms": 3000,
+    "max_concurrent_jobs": 3,
+    "playwright_config_path": "./playwright.config.ts",
+    "test_timeout_ms": 1800000
+  },
+  "environments": [
+    {
+      "name": "staging",
+      "base_url": "https://staging.example.com",
+      "concurrency_limit": 3
+    },
+    {
+      "name": "production",
+      "base_url": "https://production.example.com",
+      "concurrency_limit": 1
+    },
+    {
+      "name": "development",
+      "base_url": "http://localhost:3000",
+      "concurrency_limit": 5
+    }
+  ],
+  "schedules": [
+    {
+      "name": "Nightly Staging Tests",
+      "cron_string": "0 2 * * *",
+      "environment_name": "staging",
+      "is_enabled": true,
+      "test_command": "npx playwright test --reporter=html",
+      "custom_config": {
+        "timeout": 30000,
+        "retries": 2
+      }
+    },
+    {
+      "name": "Hourly Health Check",
+      "cron_string": "0 * * * *",
+      "environment_name": "production",
+      "is_enabled": true,
+      "test_command": "npx playwright test tests/health.spec.ts",
+      "custom_config": {
+        "timeout": 10000
+      }
+    }
+  ]
+}
+

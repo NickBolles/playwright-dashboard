@@ -1,0 +1,29 @@
+{
+  "name": "@playwright-orchestrator/job-runner",
+  "version": "1.0.0",
+  "description": "Job runner service for executing Playwright tests",
+  "main": "dist/runner.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/runner.ts",
+    "start": "node dist/runner.js",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@playwright-orchestrator/shared": "workspace:*",
+    "@playwright/test": "^1.40.0",
+    "playwright": "^1.40.0",
+    "@aws-sdk/client-s3": "^3.454.0",
+    "@aws-sdk/lib-storage": "^3.454.0",
+    "archiver": "^6.0.1",
+    "fs-extra": "^11.1.1"
+  },
+  "devDependencies": {
+    "@types/archiver": "^6.0.2",
+    "@types/fs-extra": "^11.0.4",
+    "tsx": "^4.6.0",
+    "typescript": "^5.3.0"
+  }
+}
+

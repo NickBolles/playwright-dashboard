@@ -1,0 +1,31 @@
+{
+  "name": "@playwright-orchestrator/shared",
+  "version": "1.0.0",
+  "description": "Shared utilities, types, and database models",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit",
+    "db:migrate": "node dist/database/migrate.js",
+    "db:seed": "node dist/database/seed.js"
+  },
+  "dependencies": {
+    "pg": "^8.11.3",
+    "zod": "^3.22.4",
+    "dotenv": "^16.3.1",
+    "winston": "^3.11.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.10.9",
+    "@types/uuid": "^9.0.7",
+    "typescript": "^5.3.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
+
