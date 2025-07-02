@@ -4,7 +4,7 @@
     "port": 5432,
     "database": "playwright_orchestrator",
     "username": "postgres",
-    "password": "your_password_here",
+    "password": "postgres",
     "ssl": false,
     "max_connections": 20
   },
@@ -32,7 +32,6 @@
     "worker_id": "worker-1",
     "polling_interval_ms": 3000,
     "max_concurrent_jobs": 3,
-    "playwright_config_path": "./playwright.config.ts",
     "test_timeout_ms": 1800000
   },
   "environments": [
@@ -45,33 +44,29 @@
       "name": "production",
       "base_url": "https://production.example.com",
       "concurrency_limit": 1
-    },
-    {
-      "name": "development",
-      "base_url": "http://localhost:3000",
-      "concurrency_limit": 5
     }
   ],
   "schedules": [
     {
-      "name": "Nightly Staging Tests",
+      "name": "nightly-staging",
       "cron_string": "0 2 * * *",
       "environment_name": "staging",
       "is_enabled": true,
-      "test_command": "npx playwright test --reporter=html",
+      "test_command": "npx playwright test",
       "custom_config": {
-        "timeout": 30000,
-        "retries": 2
+        "TEST_SUITE": "full",
+        "TIMEOUT": 30000
       }
     },
     {
-      "name": "Hourly Health Check",
-      "cron_string": "0 * * * *",
+      "name": "smoke-production",
+      "cron_string": "0 */6 * * *",
       "environment_name": "production",
       "is_enabled": true,
-      "test_command": "npx playwright test tests/health.spec.ts",
+      "test_command": "npx playwright test --grep smoke",
       "custom_config": {
-        "timeout": 10000
+        "TEST_SUITE": "smoke",
+        "TIMEOUT": 10000
       }
     }
   ]

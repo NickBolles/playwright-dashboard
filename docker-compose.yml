@@ -1,0 +1,188 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: playwright-orchestrator-db
+    environment:
+      POSTGRES_DB: playwright_orchestrator
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./packages/shared/src/database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - playwright-network
+
+  # MinIO (S3-compatible storage)
+  minio:
+    image: minio/minio:latest
+    container_name: playwright-orchestrator-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - playwright-network
+
+  # Create MinIO bucket
+  minio-setup:
+    image: minio/mc:latest
+    container_name: playwright-orchestrator-minio-setup
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set minio http://minio:9000 minioadmin minioadmin;
+      mc mb minio/playwright-traces --ignore-existing;
+      mc policy set public minio/playwright-traces;
+      echo 'MinIO setup completed';
+      "
+    networks:
+      - playwright-network
+
+  # Orchestrator Service
+  orchestrator:
+    build:
+      context: .
+      dockerfile: packages/orchestrator/Dockerfile
+    container_name: playwright-orchestrator-api
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: playwright_orchestrator
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      S3_ENDPOINT: http://minio:9000
+      S3_REGION: us-east-1
+      S3_BUCKET: playwright-traces
+      S3_ACCESS_KEY_ID: minioadmin
+      S3_SECRET_ACCESS_KEY: minioadmin
+      S3_FORCE_PATH_STYLE: "true"
+      ORCHESTRATOR_PORT: 3001
+      CORS_ORIGINS: "http://localhost:3000,http://localhost:3001"
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio-setup:
+        condition: service_completed_successfully
+    volumes:
+      - ./config.json:/app/config.json:ro
+      - orchestrator_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - playwright-network
+
+  # Job Runner Service
+  job-runner:
+    build:
+      context: .
+      dockerfile: packages/job-runner/Dockerfile
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: playwright_orchestrator
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      S3_ENDPOINT: http://minio:9000
+      S3_REGION: us-east-1
+      S3_BUCKET: playwright-traces
+      S3_ACCESS_KEY_ID: minioadmin
+      S3_SECRET_ACCESS_KEY: minioadmin
+      S3_FORCE_PATH_STYLE: "true"
+      WORKER_ID: "docker-worker-1"
+      POLLING_INTERVAL_MS: 3000
+      MAX_CONCURRENT_JOBS: 2
+    depends_on:
+      postgres:
+        condition: service_healthy
+      orchestrator:
+        condition: service_healthy
+      minio-setup:
+        condition: service_completed_successfully
+    volumes:
+      - ./config.json:/app/config.json:ro
+      - job_runner_logs:/app/logs
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
+    deploy:
+      replicas: 2
+    networks:
+      - playwright-network
+
+  # Web UI (React Dashboard)
+  web-ui:
+    build:
+      context: .
+      dockerfile: packages/web-ui/Dockerfile
+    container_name: playwright-orchestrator-ui
+    environment:
+      REACT_APP_API_URL: http://localhost:3001
+    ports:
+      - "3000:3000"
+    depends_on:
+      orchestrator:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - playwright-network
+
+  # Nginx Reverse Proxy (Optional)
+  nginx:
+    image: nginx:alpine
+    container_name: playwright-orchestrator-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - orchestrator
+      - web-ui
+    restart: unless-stopped
+    networks:
+      - playwright-network
+
+volumes:
+  postgres_data:
+    driver: local
+  minio_data:
+    driver: local
+  orchestrator_logs:
+    driver: local
+  job_runner_logs:
+    driver: local
+
+networks:
+  playwright-network:
+    driver: bridge
+
