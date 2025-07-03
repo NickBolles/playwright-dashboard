@@ -1,16 +1,19 @@
 # Multi-stage build for Orchestrator Service
 FROM node:18-alpine AS builder
 
+# Install pnpm
+RUN npm install -g pnpm
+
 # Set working directory
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
-COPY packages/shared/package*.json ./packages/shared/
-COPY packages/orchestrator/package*.json ./packages/orchestrator/
+COPY package.json pnpm-lock.yaml* ./
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/orchestrator/package.json ./packages/orchestrator/
 
 # Install dependencies
-RUN npm ci --only=production
+RUN pnpm install --frozen-lockfile --prod
 
 # Copy source code
 COPY packages/shared/ ./packages/shared/
@@ -18,14 +21,14 @@ COPY packages/orchestrator/ ./packages/orchestrator/
 COPY tsconfig.json ./
 
 # Build the application
-RUN npm run build -w shared
-RUN npm run build -w orchestrator
+RUN pnpm run build -w shared
+RUN pnpm run build -w orchestrator
 
 # Production stage
 FROM node:18-alpine AS production
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+# Install dumb-init and pnpm
+RUN apk add --no-cache dumb-init && npm install -g pnpm
 
 # Create app user
 RUN addgroup -g 1001 -S nodejs
@@ -35,12 +38,12 @@ RUN adduser -S orchestrator -u 1001
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
-COPY packages/shared/package*.json ./packages/shared/
-COPY packages/orchestrator/package*.json ./packages/orchestrator/
+COPY package.json pnpm-lock.yaml* ./
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/orchestrator/package.json ./packages/orchestrator/
 
 # Install only production dependencies
-RUN npm ci --only=production && npm cache clean --force
+RUN pnpm install --frozen-lockfile --prod && pnpm store prune
 
 # Copy built application
 COPY --from=builder /app/packages/shared/dist ./packages/shared/dist

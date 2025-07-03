@@ -1,16 +1,19 @@
 # Multi-stage build for Job Runner Service
 FROM node:18-alpine AS builder
 
+# Install pnpm
+RUN npm install -g pnpm
+
 # Set working directory
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
-COPY packages/shared/package*.json ./packages/shared/
-COPY packages/job-runner/package*.json ./packages/job-runner/
+COPY package.json pnpm-lock.yaml* ./
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/job-runner/package.json ./packages/job-runner/
 
 # Install dependencies
-RUN npm ci --only=production
+RUN pnpm install --frozen-lockfile --prod
 
 # Copy source code
 COPY packages/shared/ ./packages/shared/
@@ -18,17 +21,18 @@ COPY packages/job-runner/ ./packages/job-runner/
 COPY tsconfig.json ./
 
 # Build the application
-RUN npm run build -w shared
-RUN npm run build -w job-runner
+RUN pnpm run build -w shared
+RUN pnpm run build -w job-runner
 
 # Production stage
 FROM mcr.microsoft.com/playwright:v1.40.0-focal AS production
 
-# Install Node.js and npm
+# Install Node.js and pnpm
 RUN apt-get update && apt-get install -y \
     curl \
     dumb-init \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && npm install -g pnpm
 
 # Create app user
 RUN groupadd -r nodejs && useradd -r -g nodejs jobrunner
@@ -37,12 +41,12 @@ RUN groupadd -r nodejs && useradd -r -g nodejs jobrunner
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
-COPY packages/shared/package*.json ./packages/shared/
-COPY packages/job-runner/package*.json ./packages/job-runner/
+COPY package.json pnpm-lock.yaml* ./
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/job-runner/package.json ./packages/job-runner/
 
 # Install only production dependencies
-RUN npm ci --only=production && npm cache clean --force
+RUN pnpm install --frozen-lockfile --prod && pnpm store prune
 
 # Copy built application
 COPY --from=builder /app/packages/shared/dist ./packages/shared/dist

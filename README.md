@@ -23,7 +23,7 @@ The system consists of four main components:
 
 ## 📋 Prerequisites
 
-- **Node.js** 18+ and npm 9+
+- **Node.js** 18+ and pnpm 8+
 - **Docker** and Docker Compose (for containerized deployment)
 - **PostgreSQL** 15+ (or use Docker)
 - **S3-compatible storage** (AWS S3, MinIO, etc.)
@@ -33,6 +33,7 @@ The system consists of four main components:
 ### Option 1: Docker Compose (Recommended)
 
 1. **Clone and configure**:
+
    ```bash
    git clone <repository-url>
    cd playwright-orchestrator
@@ -41,6 +42,7 @@ The system consists of four main components:
    ```
 
 2. **Start all services**:
+
    ```bash
    docker-compose up -d
    ```
@@ -53,20 +55,27 @@ The system consists of four main components:
 ### Option 2: Local Development
 
 1. **Install dependencies**:
+
    ```bash
-   npm install
+   # Install pnpm if you haven't already
+   npm install -g pnpm
+
+   # Install project dependencies
+   pnpm install
    ```
 
 2. **Set up database**:
+
    ```bash
    # Start PostgreSQL (or use Docker)
    docker run -d --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:15-alpine
-   
+
    # Run migrations
-   npm run db:migrate
+   pnpm run db:migrate
    ```
 
 3. **Set up MinIO (S3 storage)**:
+
    ```bash
    docker run -d --name minio -p 9000:9000 -p 9001:9001 \
      -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin \
@@ -74,15 +83,16 @@ The system consists of four main components:
    ```
 
 4. **Start services**:
+
    ```bash
    # Terminal 1: Start orchestrator
-   npm run dev:orchestrator
-   
+   pnpm run start:orchestrator
+
    # Terminal 2: Start job runner
-   npm run dev:job-runner
-   
+   pnpm run start:job-runner
+
    # Terminal 3: Start web UI (when implemented)
-   npm run dev:web-ui
+   pnpm run dev -w web-ui
    ```
 
 ## ⚙️ Configuration
@@ -262,16 +272,19 @@ tests/
 ### Production Deployment
 
 1. **Build images**:
+
    ```bash
    docker-compose build
    ```
 
 2. **Start services**:
+
    ```bash
    docker-compose up -d
    ```
 
 3. **Scale job runners**:
+
    ```bash
    docker-compose up -d --scale job-runner=3
    ```
@@ -305,14 +318,16 @@ services:
 ### Logging
 
 Structured JSON logging with different levels:
+
 - `error` - Errors and exceptions
-- `warn` - Warnings and recoverable issues  
+- `warn` - Warnings and recoverable issues
 - `info` - General information
 - `debug` - Detailed debugging information
 
 ### Metrics
 
 Key metrics to monitor:
+
 - Test run success/failure rates
 - Average test execution time
 - Queue depth and processing time
@@ -418,4 +433,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [ ] **Notification System** - Slack/email notifications for test results
 - [ ] **Test Parallelization** - Smart test splitting and parallel execution
 - [ ] **Plugin System** - Extensible architecture for custom integrations
-
