@@ -2,7 +2,7 @@
 FROM node:18-alpine AS builder
 
 # Install pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm typescript
 
 # Set working directory
 WORKDIR /app
@@ -12,8 +12,8 @@ COPY package.json pnpm-lock.yaml* ./
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/orchestrator/package.json ./packages/orchestrator/
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile --prod
+# Install dependencies (including devDependencies for building)
+RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY packages/shared/ ./packages/shared/
@@ -21,8 +21,8 @@ COPY packages/orchestrator/ ./packages/orchestrator/
 COPY tsconfig.json ./
 
 # Build the application
-RUN pnpm run build -w shared
-RUN pnpm run build -w orchestrator
+RUN pnpm --filter shared run build
+RUN pnpm --filter orchestrator run build
 
 # Production stage
 FROM node:18-alpine AS production

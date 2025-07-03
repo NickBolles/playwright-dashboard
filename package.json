@@ -3,43 +3,43 @@
   "version": "1.0.0",
   "description": "A robust, scalable, and self-hosted Playwright test orchestrator",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
   "scripts": {
-    "build": "npm run build --workspaces",
-    "dev": "concurrently \"npm run dev -w orchestrator\" \"npm run dev -w job-runner\" \"npm run dev -w web-ui\"",
-    "start": "npm run start --workspaces",
-    "start:orchestrator": "npm run start -w orchestrator",
-    "start:job-runner": "npm run start -w job-runner",
-    "test": "npm run test --workspaces",
+    "build": "pnpm -r run build",
+    "dev": "concurrently \"pnpm run dev -w orchestrator\" \"pnpm run dev -w job-runner\" \"pnpm run dev -w web-ui\"",
+    "start": "pnpm -r run start",
+    "start:orchestrator": "pnpm run start -w orchestrator",
+    "start:job-runner": "pnpm run start -w job-runner",
+    "test": "pnpm -r run test",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint packages/*/src/**/*.{ts,tsx} --fix",
     "format": "prettier --write packages/*/src/**/*.{ts,tsx,json,md}",
-    "type-check": "npm run type-check --workspaces",
-    "clean": "npm run clean --workspaces && rm -rf node_modules",
+    "type-check": "pnpm -r run type-check",
+    "clean": "pnpm -r run clean && rm -rf node_modules",
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
     "docker:logs": "docker-compose logs -f",
-    "db:migrate": "npm run db:migrate -w shared",
-    "db:seed": "npm run db:seed -w shared"
+    "db:migrate": "pnpm run db:migrate --filter shared",
+    "db:seed": "pnpm run db:seed --filter shared"
   },
   "devDependencies": {
-    "@types/node": "^20.10.0",
-    "@typescript-eslint/eslint-plugin": "^6.13.0",
-    "@typescript-eslint/parser": "^6.13.0",
+    "@eslint/css": "^0.9.0",
+    "@eslint/js": "^9.30.1",
+    "@eslint/json": "^0.12.0",
     "@playwright/test": "^1.40.0",
+    "@types/node": "^20.10.0",
     "@vitest/coverage-v8": "^1.0.0",
     "concurrently": "^8.2.2",
-    "eslint": "^8.54.0",
+    "eslint": "^9.30.1",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.1",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^16.3.0",
     "prettier": "^3.1.0",
-    "typescript": "^5.3.0",
+    "typescript": "^5.8.3",
     "vitest": "^1.0.0"
   },
   "engines": {
@@ -55,5 +55,10 @@
     "ci-cd"
   ],
   "author": "Your Name",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "typescript-eslint": "^8.35.1",
+    "winston": "^3.17.0",
+    "zod": "^3.25.70"
+  }
 }
