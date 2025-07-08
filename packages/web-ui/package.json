@@ -21,7 +21,10 @@
     "lucide-react": "^0.294.0",
     "clsx": "^2.0.0",
     "tailwind-merge": "^2.0.0",
-    "class-variance-authority": "^0.7.0"
+    "class-variance-authority": "^0.7.0",
+    "next-themes": "^0.2.1",
+    "tailwindcss-animate": "^1.0.7",
+    "recharts": "^2.8.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.37",
