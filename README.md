@@ -246,12 +246,34 @@ npm test
 ### E2E Tests
 
 ```bash
-# Run E2E tests
+# Run all E2E tests
 npm run test:e2e
 
 # Run with UI
 npm run test:e2e:ui
+
+# Run dashboard E2E test specifically
+npm run test:e2e:dashboard
+
+# Run dashboard test with UI
+npm run test:e2e:dashboard:ui
+
+# Or use the convenience script
+./scripts/test-dashboard.sh
 ```
+
+#### Dashboard E2E Test
+
+The dashboard E2E test uses Testcontainers to set up a real PostgreSQL database with test data and verifies that:
+
+- Dashboard loads correctly with all UI components
+- Statistics display accurate data from the database
+- Real-time updates work when data changes
+- Error handling is graceful
+- Navigation between sections works
+- Responsive design functions properly
+
+See [tests/e2e/README.md](tests/e2e/README.md) for detailed documentation.
 
 ### Test Structure
 
