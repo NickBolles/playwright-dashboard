@@ -75,13 +75,13 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: [
     {
-      command: 'npm run start:orchestrator',
+      command: 'pnpm run dev -w orchestrator',
       url: 'http://localhost:3001/health',
       reuseExistingServer: !process.env.CI,
       timeout: 120 * 1000,
     },
     {
-      command: 'npm run dev -w web-ui',
+      command: 'pnpm run dev -w web-ui',
       url: 'http://localhost:3000',
       reuseExistingServer: !process.env.CI,
       timeout: 120 * 1000,
