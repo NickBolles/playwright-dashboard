@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import tsConfigPaths from 'vite-tsconfig-paths';
 import { tanstackStart } from '@tanstack/react-start/plugin/vite';
 import path from 'path';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   server: {
@@ -18,5 +19,9 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  plugins: [tsConfigPaths(), tanstackStart()],
+  plugins: [
+    react(),
+    tsConfigPaths(),
+    tanstackStart({ customViteReactPlugin: true }),
+  ],
 });
