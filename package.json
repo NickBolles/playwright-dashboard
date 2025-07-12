@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "build": "pnpm -r run build",
-    "dev": "concurrently \"pnpm run dev -w orchestrator\" \"pnpm run dev -w job-runner\" \"pnpm run dev -w web-ui\"",
+    "dev": "pnpm -r run dev",
     "start": "pnpm -r run start",
     "start:orchestrator": "pnpm run start -w orchestrator",
     "start:job-runner": "pnpm run start -w job-runner",
