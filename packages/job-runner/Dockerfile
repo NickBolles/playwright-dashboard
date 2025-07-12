@@ -2,7 +2,7 @@
 FROM node:18-alpine AS builder
 
 # Install pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm typescript
 
 # Set working directory
 WORKDIR /app
@@ -12,8 +12,8 @@ COPY package.json pnpm-lock.yaml* ./
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/job-runner/package.json ./packages/job-runner/
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile --prod
+# Install dependencies (including devDependencies for building)
+RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY packages/shared/ ./packages/shared/
@@ -21,8 +21,8 @@ COPY packages/job-runner/ ./packages/job-runner/
 COPY tsconfig.json ./
 
 # Build the application
-RUN pnpm run build -w shared
-RUN pnpm run build -w job-runner
+RUN pnpm --filter shared run build
+RUN pnpm --filter job-runner run build
 
 # Production stage
 FROM mcr.microsoft.com/playwright:v1.40.0-focal AS production

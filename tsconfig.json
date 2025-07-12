@@ -34,15 +34,8 @@
     "isolatedModules": true,
     "noEmit": false
   },
-  "include": [
-    "packages/*/src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.ts",
-    "**/*.spec.ts"
-  ],
+  "include": ["packages/*/src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"],
   "references": [
     {
       "path": "./packages/shared"
@@ -58,4 +51,3 @@
     }
   ]
 }
-
