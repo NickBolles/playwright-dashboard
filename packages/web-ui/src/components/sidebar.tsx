@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { Link, useRouter } from '@tanstack/react-router';
 import {
   LayoutDashboard,
@@ -27,7 +28,14 @@ export function Sidebar() {
   const currentPath = router.state.location.pathname;
 
   return (
-    <div className='flex h-full w-64 flex-col bg-[hsl(var(--card)/0.5)] border-r-[hsl(var(--border)/0.5)] backdrop-blur-sm'>
+    <div
+      className='flex h-full w-64 flex-col bg-[hsl(var(--card)/0.4)] border-r border-transparent backdrop-blur-xl shadow-xl relative overflow-hidden'
+      style={{
+        borderImage:
+          'linear-gradient(120deg, rgba(120,119,198,0.25), rgba(255,255,255,0.08), rgba(120,119,198,0.15)) 1',
+        borderWidth: 1,
+      }}
+    >
       <div className='flex h-16 items-center px-6 border-b-[hsl(var(--border)/0.5)]'>
         <div className='flex items-center space-x-2'>
           <div className='w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center'>

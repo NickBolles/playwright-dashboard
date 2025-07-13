@@ -8,9 +8,14 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      'rounded-lg border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] shadow-sm',
+      'rounded-lg border border-transparent bg-[hsl(var(--card)/0.6)] text-[hsl(var(--card-foreground))] shadow-lg backdrop-blur-lg before:absolute before:inset-0 before:rounded-lg before:bg-gradient-to-br before:from-[rgba(255,255,255,0.08)] before:to-[rgba(0,0,0,0.08)] before:pointer-events-none relative overflow-hidden',
       className
     )}
+    style={{
+      borderImage:
+        'linear-gradient(120deg, rgba(120,119,198,0.25), rgba(255,255,255,0.08), rgba(120,119,198,0.15)) 1',
+      borderWidth: 1,
+    }}
     {...props}
   />
 ));
