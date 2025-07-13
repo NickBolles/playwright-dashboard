@@ -1,10 +1,17 @@
 /// <reference types="vite/client" />
 import React from 'react';
-import { createRootRoute, Outlet } from '@tanstack/react-router';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider } from '@/components/theme-provider';
 import { Sidebar } from '@/components/sidebar';
+import { ThemeProvider } from '@/components/theme-provider';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  createRootRoute,
+  HeadContent,
+  Outlet,
+  Scripts,
+} from '@tanstack/react-router';
 import appCss from '../index.css?url';
+
+import type { ReactNode } from 'react';
 
 const queryClient = new QueryClient();
 
@@ -27,15 +34,31 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme='dark' storageKey='ui-theme'>
-        <div className='flex h-screen bg-background'>
-          <Sidebar />
-          <main className='flex-1 overflow-y-auto p-8'>
-            <Outlet />
-          </main>
-        </div>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <RootDocument>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme='dark' storageKey='ui-theme'>
+          <div className='flex h-screen bg-[hsl(var(--background))]'>
+            <Sidebar />
+            <main className='flex-1 overflow-y-auto p-8'>
+              <Outlet />
+            </main>
+          </div>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </RootDocument>
+  );
+}
+
+function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
+  return (
+    <html>
+      <head>
+        <HeadContent />
+      </head>
+      <body className='bg-[hsl(var(--background))] text-[hsl(var(--foreground))]'>
+        {children}
+        <Scripts />
+      </body>
+    </html>
   );
 }
