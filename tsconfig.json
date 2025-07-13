@@ -1,53 +1,15 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "commonjs",
-    "lib": ["ES2022"],
-    "outDir": "./dist",
-    "rootDir": "./",
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "Node",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "removeComments": false,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "noImplicitThis": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "moduleResolution": "node",
-    "baseUrl": "./",
+    "baseUrl": ".",
     "paths": {
-      "@shared/*": ["packages/shared/src/*"],
-      "@orchestrator/*": ["packages/orchestrator/src/*"],
-      "@job-runner/*": ["packages/job-runner/src/*"],
-      "@web-ui/*": ["packages/web-ui/src/*"]
-    },
-    "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": false
-  },
-  "include": ["packages/*/src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"],
-  "references": [
-    {
-      "path": "./packages/shared"
-    },
-    {
-      "path": "./packages/orchestrator"
-    },
-    {
-      "path": "./packages/job-runner"
-    },
-    {
-      "path": "./packages/web-ui"
+      "@/*": ["packages/web-ui/src/*"]
     }
-  ]
+  }
 }

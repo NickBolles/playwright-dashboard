@@ -1,8 +1,9 @@
 import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 import tsConfigPaths from 'vite-tsconfig-paths';
 import { tanstackStart } from '@tanstack/react-start/plugin/vite';
+import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
-import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   server: {
@@ -23,5 +24,6 @@ export default defineConfig({
     react(),
     tsConfigPaths(),
     tanstackStart({ customViteReactPlugin: true }),
+    tailwindcss(),
   ],
 });
