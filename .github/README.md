@@ -2,9 +2,27 @@
 
 This directory contains the GitHub Actions workflows for the Playwright Orchestrator project. The workflows are designed to provide comprehensive CI/CD, security, and performance monitoring.
 
+## Recent Fixes (Latest Update)
+
+### Issues Resolved:
+1. **pnpm Lockfile Compatibility**: Removed `--frozen-lockfile` flag to prevent lockfile compatibility issues
+2. **Deprecated Actions**: Updated all deprecated actions to their latest versions:
+   - `actions/cache@v3` → `actions/cache@v4`
+   - `actions/upload-artifact@v3` → `actions/upload-artifact@v4`
+   - `actions/download-artifact@v3` → `actions/download-artifact@v4`
+   - `codecov/codecov-action@v3` → `codecov/codecov-action@v4`
+3. **Basic Setup Test**: Added `test-basic.yml` workflow to verify the setup before running full CI/CD
+
 ## Workflows Overview
 
-### 1. CI/CD Pipeline (`ci-cd.yml`)
+### 1. Basic Setup Test (`test-basic.yml`) - NEW
+A simple workflow to test the basic setup and verify that:
+- Node.js and pnpm are properly configured
+- pnpm-lock.yaml exists and is valid
+- Dependencies can be installed
+- Basic lint and type checks can run
+
+### 2. CI/CD Pipeline (`ci-cd.yml`)
 
 The main CI/CD pipeline that runs on every push and pull request to `main` and `develop` branches.
 
@@ -18,7 +36,7 @@ The main CI/CD pipeline that runs on every push and pull request to `main` and `
 - **Deploy Staging**: Deploys to staging environment (develop branch)
 - **Deploy Production**: Deploys to production environment (main branch)
 
-### 2. Security Checks (`security.yml`)
+### 3. Security Checks (`security.yml`)
 
 Comprehensive security scanning and vulnerability detection.
 
@@ -27,7 +45,7 @@ Comprehensive security scanning and vulnerability detection.
 - **CodeQL Analysis**: GitHub's semantic code analysis for security vulnerabilities
 - **Container Scan**: Trivy vulnerability scanner for Docker images
 
-### 3. Release Management (`release.yml`)
+### 4. Release Management (`release.yml`)
 
 Automated release creation when tags are pushed.
 
@@ -37,11 +55,11 @@ Automated release creation when tags are pushed.
 - Changelog generation from git commits
 - Release notes updates
 
-### 4. Dependabot Auto-merge (`dependabot.yml`)
+### 5. Dependabot Auto-merge (`dependabot.yml`)
 
 Automatically enables auto-merge for Dependabot PRs when all checks pass.
 
-### 5. Performance Tests (`performance.yml`)
+### 6. Performance Tests (`performance.yml`)
 
 Performance monitoring and load testing.
 
@@ -87,11 +105,45 @@ Set up branch protection rules for `main` and `develop` branches:
 
 | Workflow | Trigger | Branches |
 |----------|---------|----------|
+| Test Basic | Push, PR | main, develop |
 | CI/CD | Push, PR | main, develop |
 | Security | Push, PR, Weekly | main, develop |
 | Release | Tag push | v* |
 | Dependabot | PR | All |
 | Performance | Push, PR, Daily | main, develop |
+
+## Troubleshooting
+
+### Common Issues and Solutions
+
+1. **pnpm Lockfile Issues**:
+   - ✅ **Fixed**: Removed `--frozen-lockfile` flag
+   - If issues persist, run `pnpm install` locally and commit the updated lockfile
+
+2. **Deprecated Actions**:
+   - ✅ **Fixed**: Updated all actions to latest versions
+   - Always use the latest stable versions of GitHub Actions
+
+3. **Dependency Installation Fails**:
+   - Check pnpm-lock.yaml is up to date
+   - Run `pnpm install` locally to regenerate lockfile
+   - Verify Node.js version compatibility
+
+4. **Tests Fail**:
+   - Verify test environment setup and database configuration
+   - Check if all required services are running
+   - Review test logs for specific error messages
+
+5. **Build Fails**:
+   - Check TypeScript compilation errors
+   - Verify all dependencies are properly installed
+   - Check for missing environment variables
+
+### Testing the Setup
+
+1. **Start with Basic Test**: The `test-basic.yml` workflow will verify the basic setup
+2. **Check Logs**: Review workflow logs in the Actions tab for specific errors
+3. **Local Testing**: Test workflows locally using [act](https://github.com/nektos/act)
 
 ## Customization
 
@@ -130,13 +182,6 @@ To add new environments (e.g., testing, staging):
 - Download artifacts from completed workflows
 - Check job logs for debugging
 
-### Common Issues
-
-1. **Dependency Installation Fails**: Check pnpm-lock.yaml is up to date
-2. **Tests Fail**: Verify test environment setup and database configuration
-3. **Build Fails**: Check TypeScript compilation errors
-4. **Deployment Fails**: Verify environment variables and secrets
-
 ### Performance Optimization
 
 - Use pnpm caching for faster dependency installation
@@ -152,6 +197,7 @@ To add new environments (e.g., testing, staging):
 4. **Security first**: Run security scans early in the pipeline
 5. **Monitor performance**: Regular performance testing and monitoring
 6. **Document changes**: Update this README when modifying workflows
+7. **Test incrementally**: Use the basic test workflow before running full CI/CD
 
 ## Support
 
@@ -161,3 +207,4 @@ For issues with GitHub Actions:
 2. Verify environment variables and secrets are configured
 3. Test workflows locally using [act](https://github.com/nektos/act)
 4. Review GitHub Actions documentation and community resources
+5. Start with the basic test workflow to isolate issues

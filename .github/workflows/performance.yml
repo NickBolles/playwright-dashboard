@@ -31,7 +31,7 @@ jobs:
           version: '8'
           
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
         
       - name: Build project
         run: pnpm build
@@ -58,7 +58,7 @@ jobs:
           BASE_URL: http://localhost:3000
           
       - name: Upload performance report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: performance-report
@@ -87,7 +87,7 @@ jobs:
           version: '8'
           
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
         
       - name: Build project
         run: pnpm build
@@ -156,7 +156,7 @@ jobs:
           version: '8'
           
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
         
       - name: Build project
         run: pnpm build
@@ -178,7 +178,7 @@ jobs:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/playwright_orchestrator_test
           
       - name: Upload memory usage report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: memory-usage-report

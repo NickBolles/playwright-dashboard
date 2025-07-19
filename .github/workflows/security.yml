@@ -30,7 +30,7 @@ jobs:
           version: '8'
           
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
         
       - name: Run npm audit
         run: pnpm audit --audit-level moderate
@@ -76,7 +76,7 @@ jobs:
           version: '8'
           
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
         
       - name: Build project
         run: pnpm build
