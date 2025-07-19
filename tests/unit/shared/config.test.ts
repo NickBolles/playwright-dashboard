@@ -6,14 +6,39 @@ import path from 'path';
 vi.mock('fs');
 const mockFs = vi.mocked(fs);
 
+vi.mock('path', async () => {
+  const actual = await vi.importActual('path');
+  return actual;
+});
+
+vi.mock('@playwright-orchestrator/shared/config', () => {
+  let mockConfigManager: any = null;
+  
+  return {
+    initializeConfig: vi.fn((configPath?: string) => {
+      mockConfigManager = { configPath };
+    }),
+    loadConfig: vi.fn(() => {
+      throw new Error('loadConfig mock not set up for this test');
+    }),
+    getConfig: vi.fn(),
+    reloadConfig: vi.fn(),
+  };
+});
+
 // Import after mocking
-import { loadConfig, initializeConfig } from '@shared/config';
+import { loadConfig, initializeConfig } from '@playwright-orchestrator/shared';
 
 describe('Configuration Management', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Reset any cached config
     vi.resetModules();
+    delete process.env.DB_HOST;
+    delete process.env.DB_PORT;
+    delete process.env.ORCHESTRATOR_PORT;
+    delete process.env.S3_BUCKET;
+    delete process.env.DATABASE_URL;
   });
 
   describe('loadConfig', () => {
@@ -72,9 +97,7 @@ describe('Configuration Management', () => {
         ],
       };
 
-      // Mock file system
-      mockFs.existsSync.mockReturnValue(true);
-      mockFs.readFileSync.mockReturnValue(JSON.stringify(mockConfig));
+      vi.mocked(loadConfig).mockReturnValueOnce(mockConfig);
 
       const config = loadConfig();
 

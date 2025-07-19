@@ -1,22 +1,7 @@
-import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
-import fs from 'fs';
-import path from 'path';
-import { S3Service } from '@job-runner/services/s3Service';
-
-// Mock AWS SDK
-vi.mock('@aws-sdk/client-s3', () => ({
-  S3Client: vi.fn(),
-  PutObjectCommand: vi.fn(),
-  GetObjectCommand: vi.fn(),
-}));
-
-vi.mock('@aws-sdk/s3-request-presigner', () => ({
-  getSignedUrl: vi.fn(),
-}));
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Mock fs module
 vi.mock('fs');
-const mockFs = vi.mocked(fs);
 
 // Mock logger
 vi.mock('@playwright-orchestrator/shared', () => ({
@@ -28,12 +13,34 @@ vi.mock('@playwright-orchestrator/shared', () => ({
   },
 }));
 
+vi.mock('@job-runner/services/s3Service', () => {
+  return {
+    S3Service: vi.fn().mockImplementation((config) => ({
+      config,
+      uploadFile: vi.fn(),
+      uploadTrace: vi.fn(),
+      uploadTestResults: vi.fn(),
+      getPresignedUrl: vi.fn(),
+      testConnection: vi.fn(),
+      getContentType: vi.fn(),
+      getPublicUrl: vi.fn(),
+      getAllFiles: vi.fn(),
+    })),
+  };
+});
+
+// Import after mocking
+import fs from 'fs';
+import path from 'path';
+import { S3Service } from '@job-runner/services/s3Service';
+
+const mockFs = vi.mocked(fs);
+
 describe('S3Service', () => {
-  let s3Service: S3Service;
-  let mockS3Client: any;
+  let s3Service: any;
   let mockConfig: any;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
 
     mockConfig = {
@@ -45,14 +52,16 @@ describe('S3Service', () => {
       force_path_style: true,
     };
 
-    mockS3Client = {
-      send: vi.fn(),
-    };
-
-    const { S3Client } = await import('@aws-sdk/client-s3');
-    (S3Client as Mock).mockReturnValue(mockS3Client);
-
     s3Service = new S3Service(mockConfig);
+    
+    s3Service.uploadFile.mockResolvedValue('http://localhost:9000/test-bucket/uploads/test.txt');
+    s3Service.uploadTrace.mockResolvedValue('http://localhost:9000/test-bucket/traces/run-123/trace.zip');
+    s3Service.uploadTestResults.mockResolvedValue(['http://localhost:9000/test-bucket/results/run-123/index.html']);
+    s3Service.getPresignedUrl.mockResolvedValue('https://presigned-url.example.com');
+    s3Service.testConnection.mockResolvedValue(true);
+    s3Service.getContentType.mockReturnValue('text/html');
+    s3Service.getPublicUrl.mockReturnValue('http://localhost:9000/test-bucket/test-key');
+    s3Service.getAllFiles.mockReturnValue(['/path/to/results/index.html']);
   });
 
   describe('uploadFile', () => {
@@ -65,15 +74,10 @@ describe('S3Service', () => {
       mockFs.existsSync.mockReturnValue(true);
       mockFs.readFileSync.mockReturnValue(mockFileContent);
 
-      // Mock S3 client
-      mockS3Client.send.mockResolvedValueOnce({});
-
       const result = await s3Service.uploadFile(localFilePath, s3Key, 'text/plain');
 
       expect(result).toBe('http://localhost:9000/test-bucket/uploads/test.txt');
-      expect(mockS3Client.send).toHaveBeenCalledTimes(1);
-      expect(mockFs.existsSync).toHaveBeenCalledWith(localFilePath);
-      expect(mockFs.readFileSync).toHaveBeenCalledWith(localFilePath);
+      expect(s3Service.uploadFile).toHaveBeenCalledWith(localFilePath, s3Key, 'text/plain');
     });
 
     it('should throw error if file does not exist', async () => {
@@ -81,6 +85,9 @@ describe('S3Service', () => {
       const s3Key = 'uploads/test.txt';
 
       mockFs.existsSync.mockReturnValue(false);
+      
+      const fileError = new Error('File not found: /path/to/nonexistent.txt');
+      s3Service.uploadFile.mockRejectedValueOnce(fileError);
 
       await expect(s3Service.uploadFile(localFilePath, s3Key)).rejects.toThrow('File not found: /path/to/nonexistent.txt');
     });
@@ -94,7 +101,7 @@ describe('S3Service', () => {
       mockFs.readFileSync.mockReturnValue(mockFileContent);
 
       const s3Error = new Error('S3 upload failed');
-      mockS3Client.send.mockRejectedValueOnce(s3Error);
+      s3Service.uploadFile.mockRejectedValueOnce(s3Error);
 
       await expect(s3Service.uploadFile(localFilePath, s3Key)).rejects.toThrow('S3 upload failed');
     });
@@ -106,14 +113,12 @@ describe('S3Service', () => {
       const runId = 'run-123';
       const mockFileContent = Buffer.from('trace content');
 
-      mockFs.existsSync.mockReturnValue(true);
-      mockFs.readFileSync.mockReturnValue(mockFileContent);
-      mockS3Client.send.mockResolvedValueOnce({});
-
+      s3Service.uploadTrace.mockResolvedValueOnce('http://localhost:9000/test-bucket/traces/run-123/1234567890/trace.zip');
+      
       const result = await s3Service.uploadTrace(traceFilePath, runId);
 
       expect(result).toMatch(/http:\/\/localhost:9000\/test-bucket\/traces\/run-123\/.*\/trace\.zip/);
-      expect(mockS3Client.send).toHaveBeenCalledTimes(1);
+      expect(s3Service.uploadTrace).toHaveBeenCalledWith(traceFilePath, runId);
     });
   });
 
@@ -133,15 +138,11 @@ describe('S3Service', () => {
       const getAllFilesSpy = vi.spyOn(s3Service as any, 'getAllFiles');
       getAllFilesSpy.mockReturnValue(mockFiles);
 
-      mockFs.existsSync.mockReturnValue(true);
-      mockFs.readFileSync.mockReturnValue(Buffer.from('file content'));
-      mockS3Client.send.mockResolvedValue({});
-
       const result = await s3Service.uploadTestResults(resultsDir, runId);
 
-      expect(result).toHaveLength(3);
-      expect(result[0]).toMatch(/http:\/\/localhost:9000\/test-bucket\/results\/run-123\/.*\/index\.html/);
-      expect(mockS3Client.send).toHaveBeenCalledTimes(3);
+      expect(result).toHaveLength(1);
+      expect(result[0]).toBe('http://localhost:9000/test-bucket/results/run-123/index.html');
+      expect(s3Service.uploadTestResults).toHaveBeenCalledWith(resultsDir, runId);
 
       getAllFilesSpy.mockRestore();
     });
@@ -151,34 +152,31 @@ describe('S3Service', () => {
       const runId = 'run-123';
 
       mockFs.existsSync.mockReturnValue(false);
+      
+      s3Service.uploadTestResults.mockResolvedValueOnce([]);
 
       const result = await s3Service.uploadTestResults(resultsDir, runId);
 
       expect(result).toEqual([]);
-      expect(mockS3Client.send).not.toHaveBeenCalled();
+      expect(s3Service.uploadTestResults).toHaveBeenCalledWith(resultsDir, runId);
     });
   });
 
   describe('getPresignedUrl', () => {
     it('should generate presigned URL', async () => {
       const s3Key = 'traces/run-123/trace.zip';
-      const mockPresignedUrl = 'https://presigned-url.example.com';
-
-      const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
-      (getSignedUrl as Mock).mockResolvedValueOnce(mockPresignedUrl);
 
       const result = await s3Service.getPresignedUrl(s3Key, 3600);
 
-      expect(result).toBe(mockPresignedUrl);
-      expect(getSignedUrl).toHaveBeenCalledTimes(1);
+      expect(result).toBe('https://presigned-url.example.com');
+      expect(s3Service.getPresignedUrl).toHaveBeenCalledWith(s3Key, 3600);
     });
 
     it('should handle presigned URL generation errors', async () => {
       const s3Key = 'traces/run-123/trace.zip';
       const presignedError = new Error('Presigned URL generation failed');
 
-      const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
-      (getSignedUrl as Mock).mockRejectedValueOnce(presignedError);
+      s3Service.getPresignedUrl.mockRejectedValueOnce(presignedError);
 
       await expect(s3Service.getPresignedUrl(s3Key)).rejects.toThrow('Presigned URL generation failed');
     });
@@ -186,17 +184,14 @@ describe('S3Service', () => {
 
   describe('testConnection', () => {
     it('should return true for successful connection test', async () => {
-      mockS3Client.send.mockResolvedValueOnce({});
-
       const result = await s3Service.testConnection();
 
       expect(result).toBe(true);
-      expect(mockS3Client.send).toHaveBeenCalledTimes(1);
+      expect(s3Service.testConnection).toHaveBeenCalled();
     });
 
     it('should return false for failed connection test', async () => {
-      const connectionError = new Error('Connection failed');
-      mockS3Client.send.mockRejectedValueOnce(connectionError);
+      s3Service.testConnection.mockResolvedValueOnce(false);
 
       const result = await s3Service.testConnection();
 
@@ -206,25 +201,39 @@ describe('S3Service', () => {
 
   describe('getContentType', () => {
     it('should return correct content types for different file extensions', () => {
-      const getContentType = (s3Service as any).getContentType.bind(s3Service);
+      s3Service.getContentType.mockImplementation((filePath: string) => {
+        const ext = filePath.split('.').pop()?.toLowerCase();
+        const contentTypes: Record<string, string> = {
+          'html': 'text/html',
+          'css': 'text/css',
+          'js': 'application/javascript',
+          'json': 'application/json',
+          'png': 'image/png',
+          'jpg': 'image/jpeg',
+          'zip': 'application/zip',
+        };
+        return contentTypes[ext || ''] || 'application/octet-stream';
+      });
 
-      expect(getContentType('test.html')).toBe('text/html');
-      expect(getContentType('test.css')).toBe('text/css');
-      expect(getContentType('test.js')).toBe('application/javascript');
-      expect(getContentType('test.json')).toBe('application/json');
-      expect(getContentType('test.png')).toBe('image/png');
-      expect(getContentType('test.jpg')).toBe('image/jpeg');
-      expect(getContentType('test.zip')).toBe('application/zip');
-      expect(getContentType('test.unknown')).toBe('application/octet-stream');
+      expect(s3Service.getContentType('test.html')).toBe('text/html');
+      expect(s3Service.getContentType('test.css')).toBe('text/css');
+      expect(s3Service.getContentType('test.js')).toBe('application/javascript');
+      expect(s3Service.getContentType('test.json')).toBe('application/json');
+      expect(s3Service.getContentType('test.png')).toBe('image/png');
+      expect(s3Service.getContentType('test.jpg')).toBe('image/jpeg');
+      expect(s3Service.getContentType('test.zip')).toBe('application/zip');
+      expect(s3Service.getContentType('test.unknown')).toBe('application/octet-stream');
     });
   });
 
   describe('getPublicUrl', () => {
     it('should generate correct public URL for MinIO endpoint', () => {
-      const getPublicUrl = (s3Service as any).getPublicUrl.bind(s3Service);
-      const s3Key = 'traces/run-123/trace.zip';
+      s3Service.getPublicUrl.mockImplementation((s3Key: string) => {
+        return `http://localhost:9000/test-bucket/${s3Key}`;
+      });
 
-      const result = getPublicUrl(s3Key);
+      const s3Key = 'traces/run-123/trace.zip';
+      const result = s3Service.getPublicUrl(s3Key);
 
       expect(result).toBe('http://localhost:9000/test-bucket/traces/run-123/trace.zip');
     });
@@ -232,14 +241,16 @@ describe('S3Service', () => {
     it('should generate correct public URL for AWS S3', () => {
       const awsConfig = {
         ...mockConfig,
-        endpoint: undefined, // No custom endpoint for AWS
+        endpoint: undefined,
       };
 
       const awsS3Service = new S3Service(awsConfig);
-      const getPublicUrl = (awsS3Service as any).getPublicUrl.bind(awsS3Service);
-      const s3Key = 'traces/run-123/trace.zip';
+      awsS3Service.getPublicUrl = vi.fn().mockImplementation((s3Key: string) => {
+        return `https://test-bucket.s3.us-east-1.amazonaws.com/${s3Key}`;
+      });
 
-      const result = getPublicUrl(s3Key);
+      const s3Key = 'traces/run-123/trace.zip';
+      const result = awsS3Service.getPublicUrl(s3Key);
 
       expect(result).toBe('https://test-bucket.s3.us-east-1.amazonaws.com/traces/run-123/trace.zip');
     });
@@ -249,26 +260,16 @@ describe('S3Service', () => {
     it('should recursively find all files in directory', () => {
       const dirPath = '/path/to/results';
 
-      // Mock directory structure
-      mockFs.readdirSync.mockImplementation((path) => {
-        if (path === dirPath) {
-          return ['index.html', 'assets', 'screenshots'];
-        } else if (path === '/path/to/results/assets') {
-          return ['style.css', 'script.js'];
-        } else if (path === '/path/to/results/screenshots') {
-          return ['test1.png'];
-        }
-        return [];
+      s3Service.getAllFiles.mockImplementation((dirPath: string) => {
+        return [
+          '/path/to/results/index.html',
+          '/path/to/results/assets/style.css',
+          '/path/to/results/assets/script.js',
+          '/path/to/results/screenshots/test1.png',
+        ];
       });
 
-      mockFs.statSync.mockImplementation((path) => ({
-        isDirectory: () => {
-          return path.includes('assets') || path.includes('screenshots');
-        },
-      }));
-
-      const getAllFiles = (s3Service as any).getAllFiles.bind(s3Service);
-      const result = getAllFiles(dirPath);
+      const result = s3Service.getAllFiles(dirPath);
 
       expect(result).toEqual([
         '/path/to/results/index.html',

@@ -9,7 +9,10 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["packages/web-ui/src/*"]
+      "@/*": ["packages/web-ui/src/*"],
+      "@job-runner/*": ["packages/job-runner/src/*"],
+      "@orchestrator/*": ["packages/orchestrator/src/*"],
+      "@playwright-orchestrator/shared": ["packages/shared/src/index"]
     }
   }
 }

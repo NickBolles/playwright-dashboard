@@ -82,10 +82,10 @@ importers:
   packages/job-runner:
     dependencies:
       '@aws-sdk/client-s3':
-        specifier: ^3.454.0
+        specifier: ^3.844.0
         version: 3.844.0
       '@aws-sdk/s3-request-presigner':
-        specifier: ^3.454.0
+        specifier: ^3.844.0
         version: 3.844.0
       '@playwright-orchestrator/shared':
         specifier: workspace:*
@@ -145,6 +145,9 @@ importers:
       node-cron:
         specifier: ^3.0.3
         version: 3.0.3
+      uuid:
+        specifier: ^9.0.1
+        version: 9.0.1
     devDependencies:
       '@types/compression':
         specifier: ^1.7.5
@@ -161,6 +164,9 @@ importers:
       '@types/node-cron':
         specifier: ^3.0.11
         version: 3.0.11
+      '@types/uuid':
+        specifier: ^9.0.7
+        version: 9.0.8
       tsx:
         specifier: ^4.6.0
         version: 4.20.3
@@ -1868,6 +1874,7 @@ packages:
   '@smithy/middleware-endpoint@4.1.14':
     resolution: {integrity: sha512-+BGLpK5D93gCcSEceaaYhUD/+OCGXM1IDaq/jKUQ+ujB0PTWlWN85noodKw/IPFZhIKFCNEe19PGd/reUMeLSQ==}
     engines: {node: '>=18.0.0'}
+    deprecated: Please upgrade to @smithy/middleware-endpoint@4.1.15 or higher to fix a bug preventing the resolution of ENV and config file custom endpoints https://github.com/smithy-lang/smithy-typescript/issues/1645
 
   '@smithy/middleware-retry@4.1.15':
     resolution: {integrity: sha512-iKYUJpiyTQ33U2KlOZeUb0GwtzWR3C0soYcKuCnTmJrvt6XwTPQZhMfsjJZNw7PpQ3TU4Ati1qLSrkSJxnnSMQ==}

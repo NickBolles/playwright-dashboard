@@ -1,10 +1,10 @@
-import { Router } from 'express';
+import { Router, type Router as ExpressRouter } from 'express';
 import { body, validationResult } from 'express-validator';
 import { RunController } from '../../controllers/runController';
 import { asyncHandler } from '../../middleware/errorHandler';
 import { logger, WebhookPayload } from '@playwright-orchestrator/shared';
 
-const router = Router();
+const router: ExpressRouter = Router();
 const runController = new RunController();
 
 // Validation middleware
@@ -32,13 +32,15 @@ router.post(
     body('pull_request').optional().isObject(),
     body('repository').optional().isObject(),
     body('deployment').optional().isObject(),
-    body('environment_id').isUUID().withMessage('environment_id must be a valid UUID'),
+    body('environment_id')
+      .isUUID()
+      .withMessage('environment_id must be a valid UUID'),
     body('custom_config').optional().isObject(),
   ],
   validateRequest,
   asyncHandler(async (req, res) => {
     const payload: WebhookPayload & { environment_id: string } = req.body;
-    
+
     logger.info('Received GitHub PR webhook', {
       repository: payload.repository?.full_name,
       pullRequest: payload.pull_request?.number,
@@ -77,7 +79,7 @@ router.post(
         environment: payload.deployment.environment,
         web_url: payload.deployment.payload?.web_url,
       };
-      
+
       // Use deployment URL as BASE_URL if provided
       if (payload.deployment.payload?.web_url) {
         customConfig.BASE_URL = payload.deployment.payload.web_url;
@@ -112,14 +114,16 @@ router.post(
 router.post(
   '/generic',
   [
-    body('environment_id').isUUID().withMessage('environment_id must be a valid UUID'),
+    body('environment_id')
+      .isUUID()
+      .withMessage('environment_id must be a valid UUID'),
     body('custom_config').optional().isObject(),
     body('test_command').optional().isString(),
   ],
   validateRequest,
   asyncHandler(async (req, res) => {
     const { environment_id, custom_config, test_command } = req.body;
-    
+
     logger.info('Received generic webhook', {
       environmentId: environment_id,
       customConfig: custom_config,
@@ -155,8 +159,12 @@ router.post(
 router.post(
   '/deployment',
   [
-    body('environment_id').isUUID().withMessage('environment_id must be a valid UUID'),
-    body('deployment_url').isURL().withMessage('deployment_url must be a valid URL'),
+    body('environment_id')
+      .isUUID()
+      .withMessage('environment_id must be a valid UUID'),
+    body('deployment_url')
+      .isURL()
+      .withMessage('deployment_url must be a valid URL'),
     body('environment_name').optional().isString(),
     body('branch').optional().isString(),
     body('commit_sha').optional().isString(),
@@ -164,15 +172,15 @@ router.post(
   ],
   validateRequest,
   asyncHandler(async (req, res) => {
-    const { 
-      environment_id, 
-      deployment_url, 
-      environment_name, 
-      branch, 
-      commit_sha, 
-      custom_config 
+    const {
+      environment_id,
+      deployment_url,
+      environment_name,
+      branch,
+      commit_sha,
+      custom_config,
     } = req.body;
-    
+
     logger.info('Received deployment webhook', {
       environmentId: environment_id,
       deploymentUrl: deployment_url,
@@ -225,11 +233,10 @@ router.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     webhooks: {
       'github-pr': '/api/webhooks/github-pr',
-      'generic': '/api/webhooks/generic',
-      'deployment': '/api/webhooks/deployment',
+      generic: '/api/webhooks/generic',
+      deployment: '/api/webhooks/deployment',
     },
   });
 });
 
 export { router as webhookRoutes };
-

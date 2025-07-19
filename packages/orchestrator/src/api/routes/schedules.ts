@@ -1,10 +1,16 @@
-import { Router } from 'express';
+import { Router, type Router as ExpressRouter } from 'express';
 import { body, param, validationResult } from 'express-validator';
 import * as cron from 'node-cron';
 import { asyncHandler } from '../../middleware/errorHandler';
-import { getDatabase, logger, Schedule, ScheduleWithEnvironment, NotFoundError } from '@playwright-orchestrator/shared';
+import {
+  getDatabase,
+  logger,
+  Schedule,
+  ScheduleWithEnvironment,
+  NotFoundError,
+} from '@playwright-orchestrator/shared';
 
-const router = Router();
+const router: ExpressRouter = Router();
 const db = getDatabase();
 
 // Validation middleware
@@ -29,13 +35,15 @@ const validateRequest = (req: any, res: any, next: any) => {
 router.get(
   '/',
   asyncHandler(async (req, res) => {
-    const result = await db.query<ScheduleWithEnvironment & {
-      environment_name: string;
-      environment_base_url: string;
-      environment_concurrency_limit: number;
-      environment_created_at: Date;
-      environment_updated_at: Date;
-    }>(
+    const result = await db.query<
+      ScheduleWithEnvironment & {
+        environment_name: string;
+        environment_base_url: string;
+        environment_concurrency_limit: number;
+        environment_created_at: Date;
+        environment_updated_at: Date;
+      }
+    >(
       `SELECT 
          s.*,
          e.name as environment_name,
@@ -81,18 +89,18 @@ router.get(
  */
 router.get(
   '/:id',
-  [
-    param('id').isUUID().withMessage('id must be a valid UUID'),
-  ],
+  [param('id').isUUID().withMessage('id must be a valid UUID')],
   validateRequest,
   asyncHandler(async (req, res) => {
-    const result = await db.query<ScheduleWithEnvironment & {
-      environment_name: string;
-      environment_base_url: string;
-      environment_concurrency_limit: number;
-      environment_created_at: Date;
-      environment_updated_at: Date;
-    }>(
+    const result = await db.query<
+      ScheduleWithEnvironment & {
+        environment_name: string;
+        environment_base_url: string;
+        environment_concurrency_limit: number;
+        environment_created_at: Date;
+        environment_updated_at: Date;
+      }
+    >(
       `SELECT 
          s.*,
          e.name as environment_name,
@@ -142,21 +150,44 @@ router.get(
 router.post(
   '/',
   [
-    body('name').isString().isLength({ min: 1, max: 100 }).withMessage('name must be 1-100 characters'),
-    body('cron_string').isString().custom((value) => {
-      if (!cron.validate(value)) {
-        throw new Error('Invalid cron expression');
-      }
-      return true;
-    }),
-    body('environment_id').isUUID().withMessage('environment_id must be a valid UUID'),
-    body('is_enabled').optional().isBoolean().withMessage('is_enabled must be a boolean'),
-    body('test_command').optional().isString().withMessage('test_command must be a string'),
-    body('custom_config').optional().isObject().withMessage('custom_config must be an object'),
+    body('name')
+      .isString()
+      .isLength({ min: 1, max: 100 })
+      .withMessage('name must be 1-100 characters'),
+    body('cron_string')
+      .isString()
+      .custom(value => {
+        if (!cron.validate(value)) {
+          throw new Error('Invalid cron expression');
+        }
+        return true;
+      }),
+    body('environment_id')
+      .isUUID()
+      .withMessage('environment_id must be a valid UUID'),
+    body('is_enabled')
+      .optional()
+      .isBoolean()
+      .withMessage('is_enabled must be a boolean'),
+    body('test_command')
+      .optional()
+      .isString()
+      .withMessage('test_command must be a string'),
+    body('custom_config')
+      .optional()
+      .isObject()
+      .withMessage('custom_config must be an object'),
   ],
   validateRequest,
   asyncHandler(async (req, res) => {
-    const { name, cron_string, environment_id, is_enabled, test_command, custom_config } = req.body;
+    const {
+      name,
+      cron_string,
+      environment_id,
+      is_enabled,
+      test_command,
+      custom_config,
+    } = req.body;
 
     // Check if environment exists
     const envResult = await db.query(
@@ -198,7 +229,7 @@ router.post(
     );
 
     const schedule = result.rows[0];
-    
+
     logger.info('Schedule created', {
       scheduleId: schedule.id,
       name: schedule.name,
@@ -224,22 +255,48 @@ router.patch(
   '/:id',
   [
     param('id').isUUID().withMessage('id must be a valid UUID'),
-    body('name').optional().isString().isLength({ min: 1, max: 100 }).withMessage('name must be 1-100 characters'),
-    body('cron_string').optional().isString().custom((value) => {
-      if (value && !cron.validate(value)) {
-        throw new Error('Invalid cron expression');
-      }
-      return true;
-    }),
-    body('environment_id').optional().isUUID().withMessage('environment_id must be a valid UUID'),
-    body('is_enabled').optional().isBoolean().withMessage('is_enabled must be a boolean'),
-    body('test_command').optional().isString().withMessage('test_command must be a string'),
-    body('custom_config').optional().isObject().withMessage('custom_config must be an object'),
+    body('name')
+      .optional()
+      .isString()
+      .isLength({ min: 1, max: 100 })
+      .withMessage('name must be 1-100 characters'),
+    body('cron_string')
+      .optional()
+      .isString()
+      .custom(value => {
+        if (value && !cron.validate(value)) {
+          throw new Error('Invalid cron expression');
+        }
+        return true;
+      }),
+    body('environment_id')
+      .optional()
+      .isUUID()
+      .withMessage('environment_id must be a valid UUID'),
+    body('is_enabled')
+      .optional()
+      .isBoolean()
+      .withMessage('is_enabled must be a boolean'),
+    body('test_command')
+      .optional()
+      .isString()
+      .withMessage('test_command must be a string'),
+    body('custom_config')
+      .optional()
+      .isObject()
+      .withMessage('custom_config must be an object'),
   ],
   validateRequest,
   asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { name, cron_string, environment_id, is_enabled, test_command, custom_config } = req.body;
+    const {
+      name,
+      cron_string,
+      environment_id,
+      is_enabled,
+      test_command,
+      custom_config,
+    } = req.body;
 
     // Check if schedule exists
     const existingResult = await db.query<Schedule>(
@@ -327,11 +384,18 @@ router.patch(
     );
 
     const schedule = result.rows[0];
-    
+
     logger.info('Schedule updated', {
       scheduleId: schedule.id,
       name: schedule.name,
-      updates: { name, cron_string, environment_id, is_enabled, test_command, custom_config },
+      updates: {
+        name,
+        cron_string,
+        environment_id,
+        is_enabled,
+        test_command,
+        custom_config,
+      },
       ip: req.ip,
       userAgent: req.get('User-Agent'),
     });
@@ -349,9 +413,7 @@ router.patch(
  */
 router.delete(
   '/:id',
-  [
-    param('id').isUUID().withMessage('id must be a valid UUID'),
-  ],
+  [param('id').isUUID().withMessage('id must be a valid UUID')],
   validateRequest,
   asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -366,7 +428,7 @@ router.delete(
     }
 
     const schedule = result.rows[0];
-    
+
     logger.info('Schedule deleted', {
       scheduleId: schedule.id,
       name: schedule.name,
@@ -387,9 +449,7 @@ router.delete(
  */
 router.post(
   '/:id/toggle',
-  [
-    param('id').isUUID().withMessage('id must be a valid UUID'),
-  ],
+  [param('id').isUUID().withMessage('id must be a valid UUID')],
   validateRequest,
   asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -407,7 +467,7 @@ router.post(
     }
 
     const schedule = result.rows[0];
-    
+
     logger.info('Schedule toggled', {
       scheduleId: schedule.id,
       name: schedule.name,
@@ -424,4 +484,3 @@ router.post(
 );
 
 export { router as scheduleRoutes };
-

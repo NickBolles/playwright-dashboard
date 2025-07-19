@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
-import { 
-  getDatabase, 
-  logger, 
-  Run, 
+import {
+  getDatabase,
+  logger,
+  Run,
   RunWithEnvironment,
   CreateRunRequest,
   ListRunsQuery,
@@ -10,7 +10,7 @@ import {
   RunStatus,
   TriggerType,
   NotFoundError,
-  ValidationError 
+  ValidationError,
 } from '@playwright-orchestrator/shared';
 import { JobQueueService } from '../services/jobQueue';
 import { RateLimiterService } from '../services/rateLimiter';
@@ -46,7 +46,7 @@ export class RunController {
       });
 
       const runId = uuidv4();
-      const run = await this.db.transaction(async (client) => {
+      const run = await this.db.transaction(async client => {
         // Create the run
         const runResult = await client.query<Run>(
           `INSERT INTO runs (
@@ -90,15 +90,17 @@ export class RunController {
    */
   public async getRunById(runId: string): Promise<RunWithEnvironment> {
     try {
-      const result = await this.db.query<RunWithEnvironment & {
-        environment_name: string;
-        environment_base_url: string;
-        environment_concurrency_limit: number;
-        environment_created_at: Date;
-        environment_updated_at: Date;
-        schedule_name?: string;
-        schedule_cron_string?: string;
-      }>(
+      const result = await this.db.query<
+        RunWithEnvironment & {
+          environment_name: string;
+          environment_base_url: string;
+          environment_concurrency_limit: number;
+          environment_created_at: Date;
+          environment_updated_at: Date;
+          schedule_name?: string;
+          schedule_cron_string?: string;
+        }
+      >(
         `SELECT 
            r.*,
            e.name as environment_name,
@@ -143,17 +145,19 @@ export class RunController {
           created_at: row.environment_created_at,
           updated_at: row.environment_updated_at,
         },
-        schedule: row.schedule_name ? {
-          id: row.schedule_id!,
-          name: row.schedule_name,
-          cron_string: row.schedule_cron_string!,
-          environment_id: row.environment_id,
-          is_enabled: true, // We'll assume it's enabled if it exists
-          test_command: row.test_command,
-          custom_config: {},
-          created_at: row.created_at,
-          updated_at: row.updated_at,
-        } : undefined,
+        schedule: row.schedule_name
+          ? {
+              id: row.schedule_id!,
+              name: row.schedule_name,
+              cron_string: row.schedule_cron_string!,
+              environment_id: row.environment_id,
+              is_enabled: true, // We'll assume it's enabled if it exists
+              test_command: row.test_command,
+              custom_config: {},
+              created_at: row.created_at,
+              updated_at: row.updated_at,
+            }
+          : undefined,
       };
     } catch (error) {
       logger.error('Failed to get run by ID', { runId, error });
@@ -192,9 +196,10 @@ export class RunController {
         paramIndex++;
       }
 
-      const whereClause = whereConditions.length > 0 
-        ? `WHERE ${whereConditions.join(' AND ')}`
-        : '';
+      const whereClause =
+        whereConditions.length > 0
+          ? `WHERE ${whereConditions.join(' AND ')}`
+          : '';
 
       // Validate sort column
       const validSortColumns = ['created_at', 'duration_ms', 'status'];
@@ -212,13 +217,15 @@ export class RunController {
       const total = parseInt(countResult.rows[0].count);
 
       // Get runs with pagination
-      const runsResult = await this.db.query<RunWithEnvironment & {
-        environment_name: string;
-        environment_base_url: string;
-        environment_concurrency_limit: number;
-        environment_created_at: Date;
-        environment_updated_at: Date;
-      }>(
+      const runsResult = await this.db.query<
+        RunWithEnvironment & {
+          environment_name: string;
+          environment_base_url: string;
+          environment_concurrency_limit: number;
+          environment_created_at: Date;
+          environment_updated_at: Date;
+        }
+      >(
         `SELECT 
            r.*,
            e.name as environment_name,
@@ -338,7 +345,12 @@ export class RunController {
 
       return updatedRun;
     } catch (error) {
-      logger.error('Failed to update run status', { runId, status, updates, error });
+      logger.error('Failed to update run status', {
+        runId,
+        status,
+        updates,
+        error,
+      });
       throw error;
     }
   }
@@ -349,13 +361,15 @@ export class RunController {
   public async cancelRun(runId: string): Promise<Run> {
     try {
       const run = await this.getRunById(runId);
-      
+
       if (run.status !== 'queued') {
-        throw new ValidationError(`Cannot cancel run with status '${run.status}'`);
+        throw new ValidationError(
+          `Cannot cancel run with status '${run.status}'`
+        );
       }
 
       const updatedRun = await this.updateRunStatus(runId, 'cancelled');
-      
+
       logger.info('Run cancelled', { runId });
       return updatedRun;
     } catch (error) {
@@ -437,4 +451,3 @@ export class RunController {
     }
   }
 }
-
