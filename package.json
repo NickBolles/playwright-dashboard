@@ -16,7 +16,7 @@
     "test:e2e:dashboard": "playwright test dashboard.spec.ts",
     "test:e2e:dashboard:ui": "playwright test dashboard.spec.ts --ui",
     "test:coverage": "vitest run --coverage",
-    "lint": "eslint packages/*/src/**/*.{ts,tsx} --fix",
+    "lint": "npm run format && eslint packages/*/src/**/*.{ts,tsx} --fix",
     "format": "prettier --write packages/*/src/**/*.{ts,tsx,json,md}",
     "type-check": "pnpm -r run type-check",
     "clean": "pnpm -r run clean && rm -rf node_modules",
