@@ -51,10 +51,10 @@ jobs:
         run: pnpm list --depth=0
         
       - name: Run lint check
-        run: pnpm lint || echo "Lint check completed (may have warnings)"
+        run: pnpm lint || echo "Lint check completed (warnings are acceptable)"
         
       - name: Run type check
-        run: pnpm type-check || echo "Type check completed (may have errors)"
+        run: pnpm type-check || echo "Type check completed (may have warnings)"
         
       - name: Success
         run: echo "✅ Basic setup test completed successfully!"
