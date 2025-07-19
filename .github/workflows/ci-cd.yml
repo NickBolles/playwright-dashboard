@@ -1,0 +1,338 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  NODE_VERSION: '18'
+  PNPM_VERSION: '8'
+
+jobs:
+  # Lint and Format Check
+  lint:
+    name: Lint and Format
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+          
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+            
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Run ESLint
+        run: pnpm lint
+        
+      - name: Check Prettier formatting
+        run: pnpm format --check
+
+  # Type Check
+  type-check:
+    name: Type Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+          
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+            
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Run TypeScript type check
+        run: pnpm type-check
+
+  # Unit Tests
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+          
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+            
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Run unit tests
+        run: pnpm test:unit
+        
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        if: always()
+        with:
+          file: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+
+  # E2E Tests
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: playwright_orchestrator_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+          
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+          
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+            
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+        
+      - name: Build project
+        run: pnpm build
+        
+      - name: Start services
+        run: |
+          pnpm docker:up
+          sleep 30  # Wait for services to be ready
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/playwright_orchestrator_test
+          
+      - name: Run database migrations
+        run: pnpm db:migrate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/playwright_orchestrator_test
+          
+      - name: Run E2E tests
+        run: pnpm test:e2e
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/playwright_orchestrator_test
+          
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+  # Build
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [lint, type-check, unit-tests, e2e-tests]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+          
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+            
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Build project
+        run: pnpm build
+        
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: |
+            packages/*/dist/
+            packages/*/build/
+          retention-days: 7
+
+  # Docker Build
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Build Docker images
+        run: docker-compose build
+        
+      - name: Upload Docker images
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker-images
+          path: |
+            .dockerignore
+            docker/
+            docker-compose.yml
+          retention-days: 7
+
+  # Deploy to Staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: docker-build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    environment: staging
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          
+      - name: Deploy to staging
+        run: |
+          echo "Deploying to staging environment..."
+          # Add your staging deployment commands here
+          # Example: kubectl apply, docker-compose up, etc.
+
+  # Deploy to Production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: docker-build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          
+      - name: Deploy to production
+        run: |
+          echo "Deploying to production environment..."
+          # Add your production deployment commands here
+          # Example: kubectl apply, docker-compose up, etc.

@@ -1,0 +1,186 @@
+name: Performance Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run performance tests daily at 2 AM
+    - cron: '0 2 * * *'
+
+jobs:
+  # Load testing
+  load-test:
+    name: Load Testing
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: '8'
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Build project
+        run: pnpm build
+        
+      - name: Start services
+        run: |
+          pnpm docker:up
+          sleep 60  # Wait for services to be ready
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/playwright_orchestrator_test
+          
+      - name: Run database migrations
+        run: pnpm db:migrate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/playwright_orchestrator_test
+          
+      - name: Install Artillery
+        run: npm install -g artillery
+        
+      - name: Run load tests
+        run: |
+          artillery run tests/load/load-test.yml
+        env:
+          BASE_URL: http://localhost:3000
+          
+      - name: Upload performance report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: performance-report
+          path: |
+            artillery-report.json
+            tests/load/reports/
+          retention-days: 30
+
+  # Bundle size analysis
+  bundle-size:
+    name: Bundle Size Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: '8'
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Build project
+        run: pnpm build
+        
+      - name: Analyze bundle size
+        run: |
+          # Install bundle analyzer
+          npm install -g webpack-bundle-analyzer
+          
+          # Analyze bundle sizes for each package
+          for package in packages/*; do
+            if [ -f "$package/dist/index.js" ]; then
+              echo "Analyzing $package..."
+              du -h "$package/dist/index.js"
+            fi
+          done
+          
+      - name: Comment bundle size on PR
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        with:
+          script: |
+            const fs = require('fs');
+            const { execSync } = require('child_process');
+            
+            let bundleInfo = '## 📦 Bundle Size Analysis\n\n';
+            
+            try {
+              const packages = fs.readdirSync('packages');
+              for (const pkg of packages) {
+                const distPath = `packages/${pkg}/dist/index.js`;
+                if (fs.existsSync(distPath)) {
+                  const size = execSync(`du -h ${distPath}`, { encoding: 'utf8' }).trim();
+                  bundleInfo += `- **${pkg}**: ${size}\n`;
+                }
+              }
+            } catch (error) {
+              bundleInfo += '❌ Bundle analysis failed\n';
+            }
+            
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: bundleInfo
+            });
+
+  # Memory usage monitoring
+  memory-monitor:
+    name: Memory Usage Monitor
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: '8'
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Build project
+        run: pnpm build
+        
+      - name: Start services with monitoring
+        run: |
+          # Start services with memory monitoring
+          pnpm docker:up
+          sleep 30
+          
+          # Monitor memory usage for 5 minutes
+          timeout 300 bash -c '
+            while true; do
+              echo "$(date): $(docker stats --no-stream --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}" | grep playwright)"
+              sleep 30
+            done
+          ' > memory-usage.log
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/playwright_orchestrator_test
+          
+      - name: Upload memory usage report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: memory-usage-report
+          path: memory-usage.log
+          retention-days: 30

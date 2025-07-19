@@ -1,0 +1,79 @@
+config:
+  target: '{{ $processEnvironment.BASE_URL }}'
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: "Warm up"
+    - duration: 120
+      arrivalRate: 10
+      name: "Sustained load"
+    - duration: 60
+      arrivalRate: 20
+      name: "Peak load"
+    - duration: 60
+      arrivalRate: 5
+      name: "Cool down"
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+  processor: './load-test-processor.js'
+
+scenarios:
+  - name: "Dashboard API"
+    weight: 40
+    flow:
+      - get:
+          url: "/api/health"
+      - think: 2
+      - get:
+          url: "/api/dashboard"
+      - think: 1
+      - get:
+          url: "/api/jobs"
+      - think: 3
+
+  - name: "Job Management"
+    weight: 30
+    flow:
+      - post:
+          url: "/api/jobs"
+          json:
+            name: "Test Job"
+            script: "console.log('Hello World')"
+            browser: "chromium"
+      - think: 2
+      - get:
+          url: "/api/jobs/{{ jobId }}"
+      - think: 1
+      - put:
+          url: "/api/jobs/{{ jobId }}/status"
+          json:
+            status: "running"
+
+  - name: "Test Execution"
+    weight: 20
+    flow:
+      - post:
+          url: "/api/tests"
+          json:
+            name: "E2E Test"
+            url: "https://example.com"
+            selectors:
+              - "h1"
+              - ".content"
+      - think: 3
+      - get:
+          url: "/api/tests/{{ testId }}/results"
+
+  - name: "User Management"
+    weight: 10
+    flow:
+      - get:
+          url: "/api/users"
+      - think: 1
+      - post:
+          url: "/api/users"
+          json:
+            name: "Test User"
+            email: "test@example.com"
+            role: "tester"
