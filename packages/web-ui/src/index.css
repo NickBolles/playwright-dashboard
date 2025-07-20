@@ -95,7 +95,7 @@
 
   .futuristic-card::before {
     content: '';
-    @apply absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 opacity-0 transition-opacity duration-300;
+    @apply absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-secondary/20 opacity-0 transition-opacity duration-300;
   }
 
   .futuristic-card:hover::before {

@@ -87,6 +87,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
         
+      - name: Build shared package
+        run: pnpm --filter @playwright-orchestrator/shared run build
+        
       - name: Run TypeScript type check
         run: pnpm type-check
 
