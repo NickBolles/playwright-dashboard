@@ -7,8 +7,8 @@ RUN npm install -g pnpm typescript
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package.json pnpm-lock.yaml* ./
+# Copy package files and workspace configuration
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/orchestrator/package.json ./packages/orchestrator/
 
@@ -37,8 +37,8 @@ RUN adduser -S orchestrator -u 1001
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package.json pnpm-lock.yaml* ./
+# Copy package files and workspace configuration
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/orchestrator/package.json ./packages/orchestrator/
 
