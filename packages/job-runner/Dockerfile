@@ -25,7 +25,7 @@ RUN pnpm --filter shared run build
 RUN pnpm --filter job-runner run build
 
 # Production stage
-FROM mcr.microsoft.com/playwright:v1.40.0-focal AS production
+FROM mcr.microsoft.com/playwright:v1.54.0-noble AS production
 
 # Install Node.js and pnpm
 RUN apt-get update && apt-get install -y \
@@ -58,8 +58,7 @@ COPY config.json ./
 # Create necessary directories
 RUN mkdir -p logs test-results && chown -R jobrunner:nodejs logs test-results
 
-# Install Playwright browsers (already included in base image)
-RUN npx playwright install-deps
+# Playwright browsers and dependencies are already included in base image
 
 # Switch to non-root user
 USER jobrunner
