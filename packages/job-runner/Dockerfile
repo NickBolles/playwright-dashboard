@@ -7,8 +7,8 @@ RUN npm install -g pnpm typescript
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package.json pnpm-lock.yaml* ./
+# Copy package files and workspace configuration
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/job-runner/package.json ./packages/job-runner/
 
@@ -40,8 +40,8 @@ RUN groupadd -r nodejs && useradd -r -g nodejs jobrunner
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package.json pnpm-lock.yaml* ./
+# Copy package files and workspace configuration
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/job-runner/package.json ./packages/job-runner/
 
