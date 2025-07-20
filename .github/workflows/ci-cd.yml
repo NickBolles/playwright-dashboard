@@ -194,6 +194,9 @@ jobs:
       - name: Build project
         run: pnpm build
         
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
       - name: Start services
         run: |
           pnpm docker:up
@@ -282,7 +285,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
         
       - name: Build Docker images
-        run: docker-compose build
+        run: docker compose build
         
       - name: Upload Docker images
         uses: actions/upload-artifact@v4
