@@ -23,13 +23,20 @@ class OrchestratorServer {
   private schedulerService: SchedulerService;
 
   constructor() {
+    console.log('OrchestratorServer constructor called');
     this.app = express();
+    console.log('Express app created');
     this.config = loadConfig();
+    console.log('Config loaded');
     this.schedulerService = new SchedulerService();
+    console.log('SchedulerService created');
 
     this.setupMiddleware();
+    console.log('Middleware setup complete');
     this.setupRoutes();
+    console.log('Routes setup complete');
     this.setupErrorHandling();
+    console.log('Error handling setup complete');
   }
 
   private setupMiddleware(): void {
@@ -109,21 +116,29 @@ class OrchestratorServer {
   }
 
   public async start(): Promise<void> {
+    console.log('OrchestratorServer.start() called');
     try {
       // Test database connection
+      console.log('Testing database connection...');
       const db = getDatabase(this.config.database);
+      console.log('Database instance created');
       const isConnected = await db.testConnection();
+      console.log('Database connection test result:', isConnected);
 
       if (!isConnected) {
         throw new Error('Failed to connect to database');
       }
 
       // Start the scheduler service
+      console.log('Starting scheduler service...');
       await this.schedulerService.start();
+      console.log('Scheduler service started');
 
       // Start the HTTP server
       const port = this.config.orchestrator.port;
+      console.log(`Starting HTTP server on port ${port}...`);
       this.app.listen(port, () => {
+        console.log(`Server listening on port ${port}`);
         logger.info(`Orchestrator server started on port ${port}`, {
           port,
           environment: process.env.NODE_ENV || 'development',
@@ -132,8 +147,11 @@ class OrchestratorServer {
       });
 
       // Graceful shutdown handling
+      console.log('Setting up graceful shutdown...');
       this.setupGracefulShutdown();
+      console.log('Graceful shutdown setup complete');
     } catch (error) {
+      console.error('Error in start():', error);
       logger.error('Failed to start orchestrator server', error);
       process.exit(1);
     }
@@ -170,11 +188,19 @@ class OrchestratorServer {
 
 // Start the server if this file is run directly
 if (require.main === module) {
-  const server = new OrchestratorServer();
-  server.start().catch(error => {
-    logger.error('Failed to start server', error);
+  console.log('Starting orchestrator server...');
+  try {
+    const server = new OrchestratorServer();
+    console.log('OrchestratorServer instance created');
+    server.start().catch(error => {
+      console.error('Failed to start server:', error);
+      logger.error('Failed to start server', error);
+      process.exit(1);
+    });
+  } catch (error) {
+    console.error('Error creating OrchestratorServer:', error);
     process.exit(1);
-  });
+  }
 }
 
 export { OrchestratorServer };

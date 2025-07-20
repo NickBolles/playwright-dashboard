@@ -1,4 +1,14 @@
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts'
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Area,
+  AreaChart,
+} from 'recharts';
 
 // Mock data - replace with real data from API
 const data = [
@@ -32,68 +42,78 @@ const data = [
   { date: '2024-01-28', success: 89, failed: 11, total: 100 },
   { date: '2024-01-29', success: 95, failed: 5, total: 100 },
   { date: '2024-01-30', success: 87, failed: 13, total: 100 },
-]
+];
 
 export function TestStatsChart() {
   return (
-    <div className="w-full h-[300px]">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className='w-full h-[300px]'>
+      <ResponsiveContainer width='100%' height='100%'>
         <AreaChart data={data}>
           <defs>
-            <linearGradient id="successGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
+            <linearGradient id='successGradient' x1='0' y1='0' x2='0' y2='1'>
+              <stop offset='5%' stopColor='#10b981' stopOpacity={0.3} />
+              <stop offset='95%' stopColor='#10b981' stopOpacity={0.1} />
             </linearGradient>
-            <linearGradient id="failedGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1}/>
+            <linearGradient id='failedGradient' x1='0' y1='0' x2='0' y2='1'>
+              <stop offset='5%' stopColor='#ef4444' stopOpacity={0.3} />
+              <stop offset='95%' stopColor='#ef4444' stopOpacity={0.1} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
-          <XAxis 
-            dataKey="date" 
-            stroke="#9ca3af"
+          <CartesianGrid strokeDasharray='3 3' stroke='#374151' opacity={0.3} />
+          <XAxis
+            dataKey='date'
+            stroke='#9ca3af'
             fontSize={12}
-            tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            tickFormatter={value =>
+              new Date(value).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+              })
+            }
           />
-          <YAxis 
-            stroke="#9ca3af"
+          <YAxis
+            stroke='#9ca3af'
             fontSize={12}
-            tickFormatter={(value) => `${value}%`}
+            tickFormatter={value => `${value}%`}
           />
-          <Tooltip 
+          <Tooltip
             contentStyle={{
               backgroundColor: 'rgba(17, 24, 39, 0.95)',
               border: '1px solid #374151',
               borderRadius: '8px',
-              color: '#f9fafb'
+              color: '#f9fafb',
             }}
-            labelFormatter={(value) => new Date(value).toLocaleDateString('en-US', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            })}
-            formatter={(value: any, name: string) => [`${value}%`, name === 'success' ? 'Success Rate' : 'Failure Rate']}
+            labelFormatter={value =>
+              new Date(value).toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })
+            }
+            formatter={(value: any, name: string) => [
+              `${value}%`,
+              name === 'success' ? 'Success Rate' : 'Failure Rate',
+            ]}
           />
-          <Area 
-            type="monotone" 
-            dataKey="success" 
-            stroke="#10b981" 
+          <Area
+            type='monotone'
+            dataKey='success'
+            stroke='#10b981'
             strokeWidth={2}
-            fill="url(#successGradient)"
-            name="Success Rate"
+            fill='url(#successGradient)'
+            name='Success Rate'
           />
-          <Area 
-            type="monotone" 
-            dataKey="failed" 
-            stroke="#ef4444" 
+          <Area
+            type='monotone'
+            dataKey='failed'
+            stroke='#ef4444'
             strokeWidth={2}
-            fill="url(#failedGradient)"
-            name="Failure Rate"
+            fill='url(#failedGradient)'
+            name='Failure Rate'
           />
         </AreaChart>
       </ResponsiveContainer>
     </div>
-  )
+  );
 }
