@@ -4,7 +4,12 @@ import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
-import { loadConfig, logger, loggerStream, getDatabase } from '@playwright-orchestrator/shared';
+import {
+  loadConfig,
+  logger,
+  loggerStream,
+  getDatabase,
+} from '@playwright-orchestrator/shared';
 import { runRoutes } from './api/routes/runs';
 import { webhookRoutes } from './api/routes/webhooks';
 import { environmentRoutes } from './api/routes/environments';
@@ -21,7 +26,7 @@ class OrchestratorServer {
     this.app = express();
     this.config = loadConfig();
     this.schedulerService = new SchedulerService();
-    
+
     this.setupMiddleware();
     this.setupRoutes();
     this.setupErrorHandling();
@@ -29,22 +34,26 @@ class OrchestratorServer {
 
   private setupMiddleware(): void {
     // Security middleware
-    this.app.use(helmet({
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: ["'self'"],
-          styleSrc: ["'self'", "'unsafe-inline'"],
-          scriptSrc: ["'self'"],
-          imgSrc: ["'self'", "data:", "https:"],
+    this.app.use(
+      helmet({
+        contentSecurityPolicy: {
+          directives: {
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            scriptSrc: ["'self'"],
+            imgSrc: ["'self'", 'data:', 'https:'],
+          },
         },
-      },
-    }));
+      })
+    );
 
     // CORS
-    this.app.use(cors({
-      origin: this.config.orchestrator.cors_origins,
-      credentials: true,
-    }));
+    this.app.use(
+      cors({
+        origin: this.config.orchestrator.cors_origins,
+        credentials: true,
+      })
+    );
 
     // Compression
     this.app.use(compression());
@@ -104,7 +113,7 @@ class OrchestratorServer {
       // Test database connection
       const db = getDatabase(this.config.database);
       const isConnected = await db.testConnection();
-      
+
       if (!isConnected) {
         throw new Error('Failed to connect to database');
       }
@@ -124,7 +133,6 @@ class OrchestratorServer {
 
       // Graceful shutdown handling
       this.setupGracefulShutdown();
-
     } catch (error) {
       logger.error('Failed to start orchestrator server', error);
       process.exit(1);
@@ -134,15 +142,15 @@ class OrchestratorServer {
   private setupGracefulShutdown(): void {
     const shutdown = async (signal: string) => {
       logger.info(`Received ${signal}, starting graceful shutdown`);
-      
+
       try {
         // Stop the scheduler
         await this.schedulerService.stop();
-        
+
         // Close database connections
         const db = getDatabase();
         await db.close();
-        
+
         logger.info('Graceful shutdown completed');
         process.exit(0);
       } catch (error) {
@@ -163,11 +171,10 @@ class OrchestratorServer {
 // Start the server if this file is run directly
 if (require.main === module) {
   const server = new OrchestratorServer();
-  server.start().catch((error) => {
+  server.start().catch(error => {
     logger.error('Failed to start server', error);
     process.exit(1);
   });
 }
 
 export { OrchestratorServer };
-

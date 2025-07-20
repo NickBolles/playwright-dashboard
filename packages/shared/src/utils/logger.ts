@@ -26,11 +26,10 @@ const format = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
   winston.format.colorize({ all: true }),
   winston.format.printf(
-    (info) => `${info.timestamp} ${info.level}: ${info.message}${
-      info.splat !== undefined ? ` ${JSON.stringify(info.splat)}` : ''
-    }${
-      info.stack ? `\n${info.stack}` : ''
-    }`
+    info =>
+      `${info.timestamp} ${info.level}: ${info.message}${
+        info.splat !== undefined ? ` ${JSON.stringify(info.splat)}` : ''
+      }${info.stack ? `\n${info.stack}` : ''}`
   )
 );
 
@@ -88,12 +87,14 @@ if (!fs.existsSync(logsDir)) {
 
 // If we're not in production, log to the console with a simple format
 if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: winston.format.combine(
-      winston.format.colorize(),
-      winston.format.simple()
-    )
-  }));
+  logger.add(
+    new winston.transports.Console({
+      format: winston.format.combine(
+        winston.format.colorize(),
+        winston.format.simple()
+      ),
+    })
+  );
 }
 
 // Create a stream object for Morgan HTTP logging
@@ -104,4 +105,3 @@ export const loggerStream = {
 };
 
 export default logger;
-

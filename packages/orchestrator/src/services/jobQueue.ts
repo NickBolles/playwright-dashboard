@@ -1,11 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
-import { 
-  getDatabase, 
-  logger, 
-  Run, 
-  JobQueueItem, 
+import {
+  getDatabase,
+  logger,
+  Run,
+  JobQueueItem,
   JobStatus,
-  RunStatus 
+  RunStatus,
 } from '@playwright-orchestrator/shared';
 
 export class JobQueueService {
@@ -14,7 +14,10 @@ export class JobQueueService {
   /**
    * Add a new job to the queue for a run
    */
-  public async enqueueJob(runId: string, priority: number = 0): Promise<JobQueueItem> {
+  public async enqueueJob(
+    runId: string,
+    priority: number = 0
+  ): Promise<JobQueueItem> {
     try {
       const result = await this.db.query<JobQueueItem>(
         `INSERT INTO job_queue (id, run_id, status, priority, attempts, max_attempts)
@@ -38,7 +41,7 @@ export class JobQueueService {
    */
   public async getNextJob(workerId: string): Promise<JobQueueItem | null> {
     try {
-      const result = await this.db.transaction(async (client) => {
+      const result = await this.db.transaction(async client => {
         // Find the next available job
         const jobResult = await client.query<JobQueueItem>(
           `SELECT * FROM job_queue 
@@ -72,11 +75,11 @@ export class JobQueueService {
       });
 
       if (result) {
-        logger.info('Job locked for processing', { 
-          jobId: result.id, 
-          runId: result.run_id, 
+        logger.info('Job locked for processing', {
+          jobId: result.id,
+          runId: result.run_id,
           workerId,
-          attempts: result.attempts 
+          attempts: result.attempts,
         });
       }
 
@@ -92,7 +95,7 @@ export class JobQueueService {
    */
   public async completeJob(jobId: string, workerId: string): Promise<void> {
     try {
-      await this.db.transaction(async (client) => {
+      await this.db.transaction(async client => {
         // Update job status
         await client.query(
           `UPDATE job_queue 
@@ -127,12 +130,12 @@ export class JobQueueService {
    * Mark a job as failed
    */
   public async failJob(
-    jobId: string, 
-    workerId: string, 
+    jobId: string,
+    workerId: string,
     errorMessage: string
   ): Promise<void> {
     try {
-      await this.db.transaction(async (client) => {
+      await this.db.transaction(async client => {
         // Get the current job to check attempts
         const jobResult = await client.query<JobQueueItem>(
           'SELECT * FROM job_queue WHERE id = $1 AND locked_by = $2',
@@ -140,7 +143,9 @@ export class JobQueueService {
         );
 
         if (jobResult.rows.length === 0) {
-          throw new Error(`Job ${jobId} not found or not locked by worker ${workerId}`);
+          throw new Error(
+            `Job ${jobId} not found or not locked by worker ${workerId}`
+          );
         }
 
         const job = jobResult.rows[0];
@@ -159,12 +164,12 @@ export class JobQueueService {
             [jobId, workerId, errorMessage]
           );
 
-          logger.warn('Job failed, will retry', { 
-            jobId, 
-            workerId, 
-            attempts: job.attempts, 
+          logger.warn('Job failed, will retry', {
+            jobId,
+            workerId,
+            attempts: job.attempts,
             maxAttempts: job.max_attempts,
-            error: errorMessage 
+            error: errorMessage,
           });
         } else {
           // Mark job as permanently failed
@@ -191,11 +196,11 @@ export class JobQueueService {
             [jobId, errorMessage]
           );
 
-          logger.error('Job permanently failed', { 
-            jobId, 
-            workerId, 
-            attempts: job.attempts, 
-            error: errorMessage 
+          logger.error('Job permanently failed', {
+            jobId,
+            workerId,
+            attempts: job.attempts,
+            error: errorMessage,
           });
         }
       });
@@ -292,4 +297,3 @@ export class JobQueueService {
     }
   }
 }
-

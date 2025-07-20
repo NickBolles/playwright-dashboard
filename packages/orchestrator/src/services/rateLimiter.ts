@@ -1,8 +1,8 @@
-import { 
-  getDatabase, 
-  logger, 
+import {
+  getDatabase,
+  logger,
   Environment,
-  RateLimitError 
+  RateLimitError,
 } from '@playwright-orchestrator/shared';
 
 export class RateLimiterService {
@@ -54,13 +54,15 @@ export class RateLimiterService {
   /**
    * Get current running counts for all environments
    */
-  public async getCurrentCounts(): Promise<Array<{
-    environment_id: string;
-    environment_name: string;
-    concurrency_limit: number;
-    current_running: number;
-    available_slots: number;
-  }>> {
+  public async getCurrentCounts(): Promise<
+    Array<{
+      environment_id: string;
+      environment_name: string;
+      concurrency_limit: number;
+      current_running: number;
+      available_slots: number;
+    }>
+  > {
     try {
       const result = await this.db.query<{
         environment_id: string;
@@ -98,7 +100,7 @@ export class RateLimiterService {
    * This is used by the job queue to respect rate limits
    */
   public async waitForAvailableSlot(
-    environmentId: string, 
+    environmentId: string,
     maxWaitMs: number = 30000
   ): Promise<boolean> {
     const startTime = Date.now();
@@ -114,10 +116,10 @@ export class RateLimiterService {
       await new Promise(resolve => setTimeout(resolve, checkInterval));
     }
 
-    logger.warn('Timeout waiting for available slot', { 
-      environmentId, 
+    logger.warn('Timeout waiting for available slot', {
+      environmentId,
       maxWaitMs,
-      actualWaitMs: Date.now() - startTime 
+      actualWaitMs: Date.now() - startTime,
     });
     return false;
   }
@@ -159,7 +161,7 @@ export class RateLimiterService {
 
       const row = result.rows[0];
       const currentRunning = parseInt(row.current_running);
-      
+
       return {
         environment: {
           id: row.id,
@@ -183,7 +185,7 @@ export class RateLimiterService {
    * Update environment concurrency limit
    */
   public async updateConcurrencyLimit(
-    environmentId: string, 
+    environmentId: string,
     newLimit: number
   ): Promise<Environment> {
     try {
@@ -213,10 +215,10 @@ export class RateLimiterService {
 
       return environment;
     } catch (error) {
-      logger.error('Failed to update concurrency limit', { 
-        environmentId, 
-        newLimit, 
-        error 
+      logger.error('Failed to update concurrency limit', {
+        environmentId,
+        newLimit,
+        error,
       });
       throw error;
     }
@@ -228,14 +230,13 @@ export class RateLimiterService {
    */
   public async enforceRateLimit(environmentId: string): Promise<void> {
     const canStart = await this.canStartRun(environmentId);
-    
+
     if (!canStart) {
       const envInfo = await this.getEnvironmentInfo(environmentId);
       throw new RateLimitError(
-        envInfo.environment.name, 
+        envInfo.environment.name,
         envInfo.environment.concurrency_limit
       );
     }
   }
 }
-

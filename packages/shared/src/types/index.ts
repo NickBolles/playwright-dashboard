@@ -1,6 +1,12 @@
 // Shared types for the Playwright Orchestrator system
 
-export type RunStatus = 'queued' | 'in_progress' | 'success' | 'failed' | 'error' | 'cancelled';
+export type RunStatus =
+  | 'queued'
+  | 'in_progress'
+  | 'success'
+  | 'failed'
+  | 'error'
+  | 'cancelled';
 export type JobStatus = 'pending' | 'processing' | 'completed' | 'failed';
 export type TriggerType = 'manual' | 'schedule' | 'webhook' | 'api';
 
@@ -192,7 +198,10 @@ export class RateLimitError extends OrchestratorError {
 }
 
 export class ValidationError extends OrchestratorError {
-  constructor(message: string, public field?: string) {
+  constructor(
+    message: string,
+    public field?: string
+  ) {
     super(message, 'VALIDATION_ERROR', 400);
   }
 }
@@ -202,4 +211,3 @@ export class NotFoundError extends OrchestratorError {
     super(`${resource} with id '${id}' not found`, 'NOT_FOUND', 404);
   }
 }
-
