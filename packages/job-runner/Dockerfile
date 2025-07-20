@@ -7,8 +7,8 @@ RUN npm install -g pnpm typescript
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package.json pnpm-lock.yaml* ./
+# Copy package files and workspace configuration
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/job-runner/package.json ./packages/job-runner/
 
@@ -25,7 +25,7 @@ RUN pnpm --filter shared run build
 RUN pnpm --filter job-runner run build
 
 # Production stage
-FROM mcr.microsoft.com/playwright:v1.40.0-focal AS production
+FROM mcr.microsoft.com/playwright:v1.54.0-noble AS production
 
 # Install Node.js and pnpm
 RUN apt-get update && apt-get install -y \
@@ -40,8 +40,8 @@ RUN groupadd -r nodejs && useradd -r -g nodejs jobrunner
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package.json pnpm-lock.yaml* ./
+# Copy package files and workspace configuration
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/job-runner/package.json ./packages/job-runner/
 
@@ -58,8 +58,7 @@ COPY config.json ./
 # Create necessary directories
 RUN mkdir -p logs test-results && chown -R jobrunner:nodejs logs test-results
 
-# Install Playwright browsers (already included in base image)
-RUN npx playwright install-deps
+# Playwright browsers and dependencies are already included in base image
 
 # Switch to non-root user
 USER jobrunner

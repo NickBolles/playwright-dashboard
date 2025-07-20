@@ -6,6 +6,8 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     setupFiles: ['./tests/unit/setup.ts'],
+    include: ['tests/unit/**/*.test.ts'],
+    exclude: ['tests/e2e/**/*'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -26,6 +28,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './'),
       '@shared': path.resolve(__dirname, './packages/shared/src'),
+      '@playwright-orchestrator/shared': path.resolve(__dirname, './packages/shared/src'),
       '@orchestrator': path.resolve(__dirname, './packages/orchestrator/src'),
       '@job-runner': path.resolve(__dirname, './packages/job-runner/src'),
     },

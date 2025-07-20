@@ -1,10 +1,10 @@
 import * as cron from 'node-cron';
-import { 
-  getDatabase, 
-  logger, 
+import {
+  getDatabase,
+  logger,
   getConfig,
   Schedule,
-  ScheduleWithEnvironment 
+  ScheduleWithEnvironment,
 } from '@playwright-orchestrator/shared';
 import { RunController } from '../controllers/runController';
 
@@ -30,10 +30,10 @@ export class SchedulerService {
 
     try {
       logger.info('Starting scheduler service');
-      
+
       // Load and schedule all enabled schedules
       await this.loadSchedules();
-      
+
       this.isRunning = true;
       logger.info('Scheduler service started successfully', {
         scheduledTasksCount: this.scheduledTasks.size,
@@ -54,16 +54,16 @@ export class SchedulerService {
     }
 
     logger.info('Stopping scheduler service');
-    
+
     // Stop all scheduled tasks
     for (const [scheduleId, scheduledTask] of this.scheduledTasks) {
       scheduledTask.task.stop();
       logger.debug('Stopped scheduled task', { scheduleId });
     }
-    
+
     this.scheduledTasks.clear();
     this.isRunning = false;
-    
+
     logger.info('Scheduler service stopped');
   }
 
@@ -72,16 +72,16 @@ export class SchedulerService {
    */
   public async reloadSchedules(): Promise<void> {
     logger.info('Reloading schedules');
-    
+
     // Stop existing tasks
     for (const scheduledTask of this.scheduledTasks.values()) {
       scheduledTask.task.stop();
     }
     this.scheduledTasks.clear();
-    
+
     // Load fresh schedules
     await this.loadSchedules();
-    
+
     logger.info('Schedules reloaded', {
       scheduledTasksCount: this.scheduledTasks.size,
     });
@@ -93,11 +93,11 @@ export class SchedulerService {
   private async loadSchedules(): Promise<void> {
     try {
       const schedules = await this.getEnabledSchedules();
-      
+
       for (const schedule of schedules) {
         await this.scheduleTask(schedule);
       }
-      
+
       logger.info('Loaded schedules', { count: schedules.length });
     } catch (error) {
       logger.error('Failed to load schedules', error);
@@ -109,13 +109,15 @@ export class SchedulerService {
    * Get all enabled schedules from the database
    */
   private async getEnabledSchedules(): Promise<ScheduleWithEnvironment[]> {
-    const result = await this.db.query<ScheduleWithEnvironment & {
-      environment_name: string;
-      environment_base_url: string;
-      environment_concurrency_limit: number;
-      environment_created_at: Date;
-      environment_updated_at: Date;
-    }>(
+    const result = await this.db.query<
+      ScheduleWithEnvironment & {
+        environment_name: string;
+        environment_base_url: string;
+        environment_concurrency_limit: number;
+        environment_created_at: Date;
+        environment_updated_at: Date;
+      }
+    >(
       `SELECT 
          s.*,
          e.name as environment_name,
@@ -179,7 +181,7 @@ export class SchedulerService {
 
       // Store the task
       this.scheduledTasks.set(schedule.id, { schedule, task });
-      
+
       logger.info('Scheduled task created', {
         scheduleId: schedule.id,
         scheduleName: schedule.name,
@@ -199,7 +201,9 @@ export class SchedulerService {
   /**
    * Execute a scheduled run
    */
-  private async executeScheduledRun(schedule: ScheduleWithEnvironment): Promise<void> {
+  private async executeScheduledRun(
+    schedule: ScheduleWithEnvironment
+  ): Promise<void> {
     try {
       logger.info('Executing scheduled run', {
         scheduleId: schedule.id,
@@ -272,14 +276,18 @@ export class SchedulerService {
   /**
    * Get schedule by ID with environment info
    */
-  private async getScheduleById(scheduleId: string): Promise<ScheduleWithEnvironment[]> {
-    const result = await this.db.query<ScheduleWithEnvironment & {
-      environment_name: string;
-      environment_base_url: string;
-      environment_concurrency_limit: number;
-      environment_created_at: Date;
-      environment_updated_at: Date;
-    }>(
+  private async getScheduleById(
+    scheduleId: string
+  ): Promise<ScheduleWithEnvironment[]> {
+    const result = await this.db.query<
+      ScheduleWithEnvironment & {
+        environment_name: string;
+        environment_base_url: string;
+        environment_concurrency_limit: number;
+        environment_created_at: Date;
+        environment_updated_at: Date;
+      }
+    >(
       `SELECT 
          s.*,
          e.name as environment_name,
@@ -328,13 +336,15 @@ export class SchedulerService {
       isRunning: boolean;
     }>;
   } {
-    const tasks = Array.from(this.scheduledTasks.entries()).map(([scheduleId, scheduledTask]) => ({
-      scheduleId,
-      scheduleName: scheduledTask.schedule.name,
-      cronString: scheduledTask.schedule.cron_string,
-      environmentName: scheduledTask.schedule.environment.name,
-      isRunning: scheduledTask.task.getStatus() === 'scheduled',
-    }));
+    const tasks = Array.from(this.scheduledTasks.entries()).map(
+      ([scheduleId, scheduledTask]) => ({
+        scheduleId,
+        scheduleName: scheduledTask.schedule.name,
+        cronString: scheduledTask.schedule.cron_string,
+        environmentName: scheduledTask.schedule.environment.name,
+        isRunning: true, // Task is running if it exists in scheduledTasks
+      })
+    );
 
     return {
       isRunning: this.isRunning,
@@ -343,4 +353,3 @@ export class SchedulerService {
     };
   }
 }
-

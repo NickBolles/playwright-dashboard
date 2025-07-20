@@ -1,4 +1,8 @@
-import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import fs from 'fs';
 import path from 'path';
@@ -35,7 +39,7 @@ export class S3Service {
       }
 
       const fileContent = fs.readFileSync(localFilePath);
-      
+
       const command = new PutObjectCommand({
         Bucket: this.config.bucket,
         Key: s3Key,
@@ -47,7 +51,7 @@ export class S3Service {
 
       // Generate the public URL
       const publicUrl = this.getPublicUrl(s3Key);
-      
+
       logger.info('File uploaded to S3', {
         localFilePath,
         s3Key,
@@ -77,7 +81,7 @@ export class S3Service {
   ): Promise<string> {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const s3Key = `traces/${runId}/${timestamp}/trace.zip`;
-    
+
     return this.uploadFile(traceFilePath, s3Key, 'application/zip');
   }
 
@@ -89,7 +93,7 @@ export class S3Service {
     runId: string
   ): Promise<string[]> {
     const uploadedFiles: string[] = [];
-    
+
     if (!fs.existsSync(resultsDir)) {
       logger.warn('Results directory not found', { resultsDir });
       return uploadedFiles;
@@ -98,11 +102,11 @@ export class S3Service {
     try {
       const files = this.getAllFiles(resultsDir);
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      
+
       for (const filePath of files) {
         const relativePath = path.relative(resultsDir, filePath);
         const s3Key = `results/${runId}/${timestamp}/${relativePath}`;
-        
+
         const contentType = this.getContentType(filePath);
         const publicUrl = await this.uploadFile(filePath, s3Key, contentType);
         uploadedFiles.push(publicUrl);
@@ -172,20 +176,20 @@ export class S3Service {
    */
   private getAllFiles(dirPath: string): string[] {
     const files: string[] = [];
-    
+
     const items = fs.readdirSync(dirPath);
-    
+
     for (const item of items) {
       const fullPath = path.join(dirPath, item);
       const stat = fs.statSync(fullPath);
-      
+
       if (stat.isDirectory()) {
         files.push(...this.getAllFiles(fullPath));
       } else {
         files.push(fullPath);
       }
     }
-    
+
     return files;
   }
 
@@ -194,7 +198,7 @@ export class S3Service {
    */
   private getContentType(filePath: string): string {
     const ext = path.extname(filePath).toLowerCase();
-    
+
     const contentTypes: Record<string, string> = {
       '.html': 'text/html',
       '.css': 'text/css',
@@ -210,7 +214,7 @@ export class S3Service {
       '.txt': 'text/plain',
       '.xml': 'application/xml',
     };
-    
+
     return contentTypes[ext] || 'application/octet-stream';
   }
 
@@ -228,12 +232,12 @@ export class S3Service {
       });
 
       await this.client.send(command);
-      
+
       logger.info('S3 connection test successful', {
         bucket: this.config.bucket,
         endpoint: this.config.endpoint,
       });
-      
+
       return true;
     } catch (error) {
       logger.error('S3 connection test failed', {
@@ -245,4 +249,3 @@ export class S3Service {
     }
   }
 }
-

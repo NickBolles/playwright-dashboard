@@ -1,10 +1,15 @@
-import { Router } from 'express';
+import { Router, type Router as ExpressRouter } from 'express';
 import { body, param, validationResult } from 'express-validator';
 import { asyncHandler } from '../../middleware/errorHandler';
-import { getDatabase, logger, Environment, NotFoundError } from '@playwright-orchestrator/shared';
+import {
+  getDatabase,
+  logger,
+  Environment,
+  NotFoundError,
+} from '@playwright-orchestrator/shared';
 import { RateLimiterService } from '../../services/rateLimiter';
 
-const router = Router();
+const router: ExpressRouter = Router();
 const db = getDatabase();
 const rateLimiter = new RateLimiterService();
 
@@ -47,9 +52,7 @@ router.get(
  */
 router.get(
   '/:id',
-  [
-    param('id').isUUID().withMessage('id must be a valid UUID'),
-  ],
+  [param('id').isUUID().withMessage('id must be a valid UUID')],
   validateRequest,
   asyncHandler(async (req, res) => {
     const environmentInfo = await rateLimiter.getEnvironmentInfo(req.params.id);
@@ -64,9 +67,14 @@ router.get(
 router.post(
   '/',
   [
-    body('name').isString().isLength({ min: 1, max: 100 }).withMessage('name must be 1-100 characters'),
+    body('name')
+      .isString()
+      .isLength({ min: 1, max: 100 })
+      .withMessage('name must be 1-100 characters'),
     body('base_url').isURL().withMessage('base_url must be a valid URL'),
-    body('concurrency_limit').isInt({ min: 1, max: 50 }).withMessage('concurrency_limit must be between 1 and 50'),
+    body('concurrency_limit')
+      .isInt({ min: 1, max: 50 })
+      .withMessage('concurrency_limit must be between 1 and 50'),
   ],
   validateRequest,
   asyncHandler(async (req, res) => {
@@ -95,7 +103,7 @@ router.post(
     );
 
     const environment = result.rows[0];
-    
+
     logger.info('Environment created', {
       environmentId: environment.id,
       name: environment.name,
@@ -120,9 +128,19 @@ router.patch(
   '/:id',
   [
     param('id').isUUID().withMessage('id must be a valid UUID'),
-    body('name').optional().isString().isLength({ min: 1, max: 100 }).withMessage('name must be 1-100 characters'),
-    body('base_url').optional().isURL().withMessage('base_url must be a valid URL'),
-    body('concurrency_limit').optional().isInt({ min: 1, max: 50 }).withMessage('concurrency_limit must be between 1 and 50'),
+    body('name')
+      .optional()
+      .isString()
+      .isLength({ min: 1, max: 100 })
+      .withMessage('name must be 1-100 characters'),
+    body('base_url')
+      .optional()
+      .isURL()
+      .withMessage('base_url must be a valid URL'),
+    body('concurrency_limit')
+      .optional()
+      .isInt({ min: 1, max: 50 })
+      .withMessage('concurrency_limit must be between 1 and 50'),
   ],
   validateRequest,
   asyncHandler(async (req, res) => {
@@ -183,7 +201,7 @@ router.patch(
     );
 
     const environment = result.rows[0];
-    
+
     logger.info('Environment updated', {
       environmentId: environment.id,
       name: environment.name,
@@ -205,9 +223,7 @@ router.patch(
  */
 router.delete(
   '/:id',
-  [
-    param('id').isUUID().withMessage('id must be a valid UUID'),
-  ],
+  [param('id').isUUID().withMessage('id must be a valid UUID')],
   validateRequest,
   asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -238,7 +254,7 @@ router.delete(
     }
 
     const environment = result.rows[0];
-    
+
     logger.info('Environment deleted', {
       environmentId: environment.id,
       name: environment.name,
@@ -269,4 +285,3 @@ router.get(
 );
 
 export { router as environmentRoutes };
-

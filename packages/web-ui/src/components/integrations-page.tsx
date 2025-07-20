@@ -1,21 +1,27 @@
 import { useState } from 'react';
-import { 
-  GitBranch, 
-  Github, 
-  Slack, 
-  Globe, 
-  CheckCircle, 
-  XCircle, 
+import {
+  GitBranch,
+  Github,
+  Slack,
+  Globe,
+  CheckCircle,
+  XCircle,
   Settings,
   ExternalLink,
   Plus,
-  Zap
+  Zap,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Input } from './ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from './ui/dialog';
 
 interface Integration {
   id: string;
@@ -30,7 +36,8 @@ interface Integration {
 }
 
 export function IntegrationsPage() {
-  const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
+  const [selectedIntegration, setSelectedIntegration] =
+    useState<Integration | null>(null);
   const [showConfigDialog, setShowConfigDialog] = useState(false);
 
   const availableIntegrations: Integration[] = [
@@ -73,28 +80,30 @@ export function IntegrationsPage() {
     },
   ];
 
-  const connectedIntegrations = availableIntegrations.filter(i => i.status === 'connected');
+  const connectedIntegrations = availableIntegrations.filter(
+    i => i.status === 'connected'
+  );
 
   const getStatusBadge = (status: Integration['status']) => {
     switch (status) {
       case 'connected':
         return (
-          <Badge className="bg-green-500/10 text-green-500">
-            <CheckCircle className="w-3 h-3 mr-1" />
+          <Badge className='bg-green-500/10 text-green-500'>
+            <CheckCircle className='w-3 h-3 mr-1' />
             Connected
           </Badge>
         );
       case 'error':
         return (
-          <Badge className="bg-red-500/10 text-red-500">
-            <XCircle className="w-3 h-3 mr-1" />
+          <Badge className='bg-red-500/10 text-red-500'>
+            <XCircle className='w-3 h-3 mr-1' />
             Error
           </Badge>
         );
       default:
         return (
-          <Badge className="bg-gray-500/10 text-gray-500">
-            <XCircle className="w-3 h-3 mr-1" />
+          <Badge className='bg-gray-500/10 text-gray-500'>
+            <XCircle className='w-3 h-3 mr-1' />
             Disconnected
           </Badge>
         );
@@ -107,68 +116,68 @@ export function IntegrationsPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className='p-6 space-y-6'>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className='flex items-center justify-between'>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Integrations</h1>
-          <p className="text-[hsl(var(--muted-foreground))]">
+          <h1 className='text-3xl font-bold tracking-tight'>Integrations</h1>
+          <p className='text-[hsl(var(--muted-foreground))]'>
             Connect your test orchestrator with external tools and services
           </p>
         </div>
       </div>
 
       {/* Stats Overview */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Integrations</CardTitle>
-            <GitBranch className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>
+              Total Integrations
+            </CardTitle>
+            <GitBranch className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{availableIntegrations.length}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className='text-2xl font-bold'>
+              {availableIntegrations.length}
+            </div>
+            <p className='text-xs text-muted-foreground'>
               Available integrations
             </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Connected</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Connected</CardTitle>
+            <CheckCircle className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{connectedIntegrations.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Active connections
-            </p>
+            <div className='text-2xl font-bold'>
+              {connectedIntegrations.length}
+            </div>
+            <p className='text-xs text-muted-foreground'>Active connections</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Webhooks</CardTitle>
-            <Zap className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Webhooks</CardTitle>
+            <Zap className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3</div>
-            <p className="text-xs text-muted-foreground">
-              Webhook endpoints
-            </p>
+            <div className='text-2xl font-bold'>3</div>
+            <p className='text-xs text-muted-foreground'>Webhook endpoints</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Last Sync</CardTitle>
-            <Globe className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Last Sync</CardTitle>
+            <Globe className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2m</div>
-            <p className="text-xs text-muted-foreground">
-              Ago
-            </p>
+            <div className='text-2xl font-bold'>2m</div>
+            <p className='text-xs text-muted-foreground'>Ago</p>
           </CardContent>
         </Card>
       </div>
@@ -179,60 +188,60 @@ export function IntegrationsPage() {
           <CardTitle>Available Integrations</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {availableIntegrations.map((integration) => {
+          <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
+            {availableIntegrations.map(integration => {
               const Icon = integration.icon;
               return (
-                <Card key={integration.id} className="relative">
+                <Card key={integration.id} className='relative'>
                   <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
+                    <div className='flex items-center justify-between'>
+                      <div className='flex items-center space-x-3'>
                         <div className={`p-2 rounded-lg ${integration.color}`}>
-                          <Icon className="w-5 h-5" />
+                          <Icon className='w-5 h-5' />
                         </div>
                         <div>
-                          <CardTitle className="text-lg">{integration.name}</CardTitle>
+                          <CardTitle className='text-lg'>
+                            {integration.name}
+                          </CardTitle>
                         </div>
                       </div>
                       {getStatusBadge(integration.status)}
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">
+                    <p className='text-sm text-muted-foreground mb-4'>
                       {integration.description}
                     </p>
-                    
+
                     {integration.lastSync && (
-                      <p className="text-xs text-muted-foreground mb-4">
-                        Last sync: {new Date(integration.lastSync).toLocaleString()}
+                      <p className='text-xs text-muted-foreground mb-4'>
+                        Last sync:{' '}
+                        {new Date(integration.lastSync).toLocaleString()}
                       </p>
                     )}
 
-                    <div className="flex space-x-2">
+                    <div className='flex space-x-2'>
                       {integration.status === 'connected' ? (
                         <>
                           <Button
-                            variant="outline"
-                            size="sm"
+                            variant='outline'
+                            size='sm'
                             onClick={() => handleConfigure(integration)}
                           >
-                            <Settings className="w-4 h-4 mr-2" />
+                            <Settings className='w-4 h-4 mr-2' />
                             Configure
                           </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                          >
-                            <ExternalLink className="w-4 h-4 mr-2" />
+                          <Button variant='outline' size='sm'>
+                            <ExternalLink className='w-4 h-4 mr-2' />
                             Test
                           </Button>
                         </>
                       ) : (
                         <Button
-                          size="sm"
+                          size='sm'
                           onClick={() => handleConfigure(integration)}
                         >
-                          <Plus className="w-4 h-4 mr-2" />
+                          <Plus className='w-4 h-4 mr-2' />
                           Connect
                         </Button>
                       )}
@@ -250,36 +259,39 @@ export function IntegrationsPage() {
         <CardHeader>
           <CardTitle>Integration Guidelines</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <h3 className="font-semibold">GitHub Integration</h3>
-            <p className="text-sm text-muted-foreground">
-              Connect your GitHub repository to automatically trigger tests on pull requests and deployments.
-              Requires webhook configuration in your repository settings.
+        <CardContent className='space-y-4'>
+          <div className='space-y-2'>
+            <h3 className='font-semibold'>GitHub Integration</h3>
+            <p className='text-sm text-muted-foreground'>
+              Connect your GitHub repository to automatically trigger tests on
+              pull requests and deployments. Requires webhook configuration in
+              your repository settings.
             </p>
           </div>
 
-          <div className="space-y-2">
-            <h3 className="font-semibold">Slack Notifications</h3>
-            <p className="text-sm text-muted-foreground">
-              Receive test results and alerts directly in your Slack channels. Configure channels
-              for different types of notifications (failures, successes, etc.).
+          <div className='space-y-2'>
+            <h3 className='font-semibold'>Slack Notifications</h3>
+            <p className='text-sm text-muted-foreground'>
+              Receive test results and alerts directly in your Slack channels.
+              Configure channels for different types of notifications (failures,
+              successes, etc.).
             </p>
           </div>
 
-          <div className="space-y-2">
-            <h3 className="font-semibold">Custom Webhooks</h3>
-            <p className="text-sm text-muted-foreground">
-              Create custom integrations with your existing tools using webhook endpoints.
-              Supports various trigger events and custom payloads.
+          <div className='space-y-2'>
+            <h3 className='font-semibold'>Custom Webhooks</h3>
+            <p className='text-sm text-muted-foreground'>
+              Create custom integrations with your existing tools using webhook
+              endpoints. Supports various trigger events and custom payloads.
             </p>
           </div>
 
-          <div className="space-y-2">
-            <h3 className="font-semibold">CI/CD Integration</h3>
-            <p className="text-sm text-muted-foreground">
-              Integrate with popular CI/CD tools like Jenkins, GitHub Actions, or GitLab CI
-              to make test orchestration part of your deployment pipeline.
+          <div className='space-y-2'>
+            <h3 className='font-semibold'>CI/CD Integration</h3>
+            <p className='text-sm text-muted-foreground'>
+              Integrate with popular CI/CD tools like Jenkins, GitHub Actions,
+              or GitLab CI to make test orchestration part of your deployment
+              pipeline.
             </p>
           </div>
         </CardContent>
@@ -289,82 +301,82 @@ export function IntegrationsPage() {
       <Dialog open={showConfigDialog} onOpenChange={setShowConfigDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              Configure {selectedIntegration?.name}
-            </DialogTitle>
+            <DialogTitle>Configure {selectedIntegration?.name}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
+          <div className='space-y-4'>
+            <p className='text-sm text-muted-foreground'>
               {selectedIntegration?.description}
             </p>
-            
+
             {selectedIntegration?.type === 'github' && (
-              <div className="space-y-4">
+              <div className='space-y-4'>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">GitHub Token</label>
-                  <Input
-                    placeholder="ghp_..."
-                    type="password"
-                  />
+                  <label className='text-sm font-medium mb-2 block'>
+                    GitHub Token
+                  </label>
+                  <Input placeholder='ghp_...' type='password' />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Repository</label>
-                  <Input
-                    placeholder="owner/repository"
-                  />
+                  <label className='text-sm font-medium mb-2 block'>
+                    Repository
+                  </label>
+                  <Input placeholder='owner/repository' />
                 </div>
               </div>
             )}
 
             {selectedIntegration?.type === 'slack' && (
-              <div className="space-y-4">
+              <div className='space-y-4'>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Slack Webhook URL</label>
-                  <Input
-                    placeholder="https://hooks.slack.com/services/..."
-                  />
+                  <label className='text-sm font-medium mb-2 block'>
+                    Slack Webhook URL
+                  </label>
+                  <Input placeholder='https://hooks.slack.com/services/...' />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Channel</label>
-                  <Input
-                    placeholder="#general"
-                  />
+                  <label className='text-sm font-medium mb-2 block'>
+                    Channel
+                  </label>
+                  <Input placeholder='#general' />
                 </div>
               </div>
             )}
 
             {selectedIntegration?.type === 'webhook' && (
-              <div className="space-y-4">
+              <div className='space-y-4'>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Webhook URL</label>
-                  <Input
-                    placeholder="https://your-service.com/webhook"
-                  />
+                  <label className='text-sm font-medium mb-2 block'>
+                    Webhook URL
+                  </label>
+                  <Input placeholder='https://your-service.com/webhook' />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Secret</label>
+                  <label className='text-sm font-medium mb-2 block'>
+                    Secret
+                  </label>
                   <Input
-                    placeholder="Optional webhook secret"
-                    type="password"
+                    placeholder='Optional webhook secret'
+                    type='password'
                   />
                 </div>
               </div>
             )}
 
-            <div className="bg-muted p-3 rounded-lg">
-              <p className="text-sm text-muted-foreground">
-                This integration is currently in development. Configuration options
-                will be available in a future update.
+            <div className='bg-muted p-3 rounded-lg'>
+              <p className='text-sm text-muted-foreground'>
+                This integration is currently in development. Configuration
+                options will be available in a future update.
               </p>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowConfigDialog(false)}>
+            <Button
+              variant='outline'
+              onClick={() => setShowConfigDialog(false)}
+            >
               Cancel
             </Button>
-            <Button disabled>
-              Save Configuration
-            </Button>
+            <Button disabled>Save Configuration</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -37,7 +37,11 @@ const OrchestratorConfigSchema = z.object({
 });
 
 const JobRunnerConfigSchema = z.object({
-  worker_id: z.string().default(() => `worker-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`),
+  worker_id: z
+    .string()
+    .default(
+      () => `worker-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    ),
   polling_interval_ms: z.number().default(3000), // 3 seconds
   max_concurrent_jobs: z.number().default(3),
   playwright_config_path: z.string().optional(),
@@ -100,7 +104,9 @@ class ConfigManager {
       }
     }
 
-    throw new Error(`Configuration file not found. Searched paths: ${possiblePaths.join(', ')}`);
+    throw new Error(
+      `Configuration file not found. Searched paths: ${possiblePaths.join(', ')}`
+    );
   }
 
   private loadConfigFile(): any {
@@ -114,13 +120,17 @@ class ConfigManager {
         case '.yaml':
         case '.yml':
           // For now, we'll require JSON. YAML support can be added later with js-yaml
-          throw new Error('YAML configuration files are not yet supported. Please use JSON.');
+          throw new Error(
+            'YAML configuration files are not yet supported. Please use JSON.'
+          );
         default:
           throw new Error(`Unsupported configuration file format: ${ext}`);
       }
     } catch (error) {
       if (error instanceof Error) {
-        throw new Error(`Failed to load configuration file ${this.configPath}: ${error.message}`);
+        throw new Error(
+          `Failed to load configuration file ${this.configPath}: ${error.message}`
+        );
       }
       throw error;
     }
@@ -141,46 +151,113 @@ class ConfigManager {
         ssl: url.searchParams.get('sslmode') === 'require',
       };
     } else {
-      if (process.env.DB_HOST) overrides.database = { ...overrides.database, host: process.env.DB_HOST };
-      if (process.env.DB_PORT) overrides.database = { ...overrides.database, port: parseInt(process.env.DB_PORT) };
-      if (process.env.DB_NAME) overrides.database = { ...overrides.database, database: process.env.DB_NAME };
-      if (process.env.DB_USER) overrides.database = { ...overrides.database, username: process.env.DB_USER };
-      if (process.env.DB_PASSWORD) overrides.database = { ...overrides.database, password: process.env.DB_PASSWORD };
-      if (process.env.DB_SSL) overrides.database = { ...overrides.database, ssl: process.env.DB_SSL === 'true' };
+      if (process.env.DB_HOST)
+        overrides.database = {
+          ...overrides.database,
+          host: process.env.DB_HOST,
+        };
+      if (process.env.DB_PORT)
+        overrides.database = {
+          ...overrides.database,
+          port: parseInt(process.env.DB_PORT),
+        };
+      if (process.env.DB_NAME)
+        overrides.database = {
+          ...overrides.database,
+          database: process.env.DB_NAME,
+        };
+      if (process.env.DB_USER)
+        overrides.database = {
+          ...overrides.database,
+          username: process.env.DB_USER,
+        };
+      if (process.env.DB_PASSWORD)
+        overrides.database = {
+          ...overrides.database,
+          password: process.env.DB_PASSWORD,
+        };
+      if (process.env.DB_SSL)
+        overrides.database = {
+          ...overrides.database,
+          ssl: process.env.DB_SSL === 'true',
+        };
     }
 
     // S3 overrides
-    if (process.env.S3_ENDPOINT) overrides.s3 = { ...overrides.s3, endpoint: process.env.S3_ENDPOINT };
-    if (process.env.S3_REGION) overrides.s3 = { ...overrides.s3, region: process.env.S3_REGION };
-    if (process.env.S3_BUCKET) overrides.s3 = { ...overrides.s3, bucket: process.env.S3_BUCKET };
-    if (process.env.S3_ACCESS_KEY_ID) overrides.s3 = { ...overrides.s3, access_key_id: process.env.S3_ACCESS_KEY_ID };
-    if (process.env.S3_SECRET_ACCESS_KEY) overrides.s3 = { ...overrides.s3, secret_access_key: process.env.S3_SECRET_ACCESS_KEY };
-    if (process.env.S3_FORCE_PATH_STYLE) overrides.s3 = { ...overrides.s3, force_path_style: process.env.S3_FORCE_PATH_STYLE === 'true' };
+    if (process.env.S3_ENDPOINT)
+      overrides.s3 = { ...overrides.s3, endpoint: process.env.S3_ENDPOINT };
+    if (process.env.S3_REGION)
+      overrides.s3 = { ...overrides.s3, region: process.env.S3_REGION };
+    if (process.env.S3_BUCKET)
+      overrides.s3 = { ...overrides.s3, bucket: process.env.S3_BUCKET };
+    if (process.env.S3_ACCESS_KEY_ID)
+      overrides.s3 = {
+        ...overrides.s3,
+        access_key_id: process.env.S3_ACCESS_KEY_ID,
+      };
+    if (process.env.S3_SECRET_ACCESS_KEY)
+      overrides.s3 = {
+        ...overrides.s3,
+        secret_access_key: process.env.S3_SECRET_ACCESS_KEY,
+      };
+    if (process.env.S3_FORCE_PATH_STYLE)
+      overrides.s3 = {
+        ...overrides.s3,
+        force_path_style: process.env.S3_FORCE_PATH_STYLE === 'true',
+      };
 
     // Orchestrator overrides
-    if (process.env.ORCHESTRATOR_PORT) overrides.orchestrator = { ...overrides.orchestrator, port: parseInt(process.env.ORCHESTRATOR_PORT) };
-    if (process.env.CORS_ORIGINS) overrides.orchestrator = { ...overrides.orchestrator, cors_origins: process.env.CORS_ORIGINS.split(',') };
+    if (process.env.ORCHESTRATOR_PORT)
+      overrides.orchestrator = {
+        ...overrides.orchestrator,
+        port: parseInt(process.env.ORCHESTRATOR_PORT),
+      };
+    if (process.env.CORS_ORIGINS)
+      overrides.orchestrator = {
+        ...overrides.orchestrator,
+        cors_origins: process.env.CORS_ORIGINS.split(','),
+      };
 
     // Job runner overrides
-    if (process.env.WORKER_ID) overrides.job_runner = { ...overrides.job_runner, worker_id: process.env.WORKER_ID };
-    if (process.env.POLLING_INTERVAL_MS) overrides.job_runner = { ...overrides.job_runner, polling_interval_ms: parseInt(process.env.POLLING_INTERVAL_MS) };
-    if (process.env.MAX_CONCURRENT_JOBS) overrides.job_runner = { ...overrides.job_runner, max_concurrent_jobs: parseInt(process.env.MAX_CONCURRENT_JOBS) };
-    if (process.env.PLAYWRIGHT_CONFIG_PATH) overrides.job_runner = { ...overrides.job_runner, playwright_config_path: process.env.PLAYWRIGHT_CONFIG_PATH };
+    if (process.env.WORKER_ID)
+      overrides.job_runner = {
+        ...overrides.job_runner,
+        worker_id: process.env.WORKER_ID,
+      };
+    if (process.env.POLLING_INTERVAL_MS)
+      overrides.job_runner = {
+        ...overrides.job_runner,
+        polling_interval_ms: parseInt(process.env.POLLING_INTERVAL_MS),
+      };
+    if (process.env.MAX_CONCURRENT_JOBS)
+      overrides.job_runner = {
+        ...overrides.job_runner,
+        max_concurrent_jobs: parseInt(process.env.MAX_CONCURRENT_JOBS),
+      };
+    if (process.env.PLAYWRIGHT_CONFIG_PATH)
+      overrides.job_runner = {
+        ...overrides.job_runner,
+        playwright_config_path: process.env.PLAYWRIGHT_CONFIG_PATH,
+      };
 
     return this.deepMerge(config, overrides);
   }
 
   private deepMerge(target: any, source: any): any {
     const result = { ...target };
-    
+
     for (const key in source) {
-      if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+      if (
+        source[key] &&
+        typeof source[key] === 'object' &&
+        !Array.isArray(source[key])
+      ) {
         result[key] = this.deepMerge(result[key] || {}, source[key]);
       } else {
         result[key] = source[key];
       }
     }
-    
+
     return result;
   }
 
@@ -192,24 +269,28 @@ class ConfigManager {
     try {
       // Load configuration file
       let rawConfig = this.loadConfigFile();
-      
+
       // Apply environment variable overrides
       rawConfig = this.applyEnvironmentOverrides(rawConfig);
-      
+
       // Validate configuration
       this.config = AppConfigSchema.parse(rawConfig);
-      
+
       logger.info('Configuration loaded successfully', {
         configPath: this.configPath,
         environments: this.config.environments.length,
         schedules: this.config.schedules.length,
       });
-      
+
       return this.config;
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map(err => `${err.path.join('.')}: ${err.message}`);
-        throw new Error(`Configuration validation failed:\n${errorMessages.join('\n')}`);
+        const errorMessages = error.errors.map(
+          err => `${err.path.join('.')}: ${err.message}`
+        );
+        throw new Error(
+          `Configuration validation failed:\n${errorMessages.join('\n')}`
+        );
       }
       throw error;
     }
@@ -244,15 +325,18 @@ export function loadConfig(): AppConfig {
 
 export function getConfig(): AppConfig {
   if (!configManager) {
-    throw new Error('Configuration not initialized. Call initializeConfig() or loadConfig() first.');
+    throw new Error(
+      'Configuration not initialized. Call initializeConfig() or loadConfig() first.'
+    );
   }
   return configManager.get();
 }
 
 export function reloadConfig(): AppConfig {
   if (!configManager) {
-    throw new Error('Configuration not initialized. Call initializeConfig() or loadConfig() first.');
+    throw new Error(
+      'Configuration not initialized. Call initializeConfig() or loadConfig() first.'
+    );
   }
   return configManager.reload();
 }
-

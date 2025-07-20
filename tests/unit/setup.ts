@@ -1,5 +1,4 @@
-import { beforeAll, afterAll, beforeEach } from 'vitest';
-import { loadConfig, getDatabase } from '@playwright-orchestrator/shared';
+import { beforeAll, afterAll, beforeEach, vi } from 'vitest';
 
 // Mock configuration for tests
 const mockConfig = {
@@ -42,20 +41,25 @@ const mockConfig = {
   schedules: [],
 };
 
+// Mock the shared package at the top level
+vi.mock('@playwright-orchestrator/shared', async () => {
+  const actual = await vi.importActual('@playwright-orchestrator/shared');
+  return {
+    ...actual,
+    getConfig: () => mockConfig,
+    initializeConfig: vi.fn(),
+    getDatabase: vi.fn(() => ({
+      query: vi.fn(),
+      transaction: vi.fn(),
+      close: vi.fn(),
+    })),
+  };
+});
+
 // Global test setup
 beforeAll(async () => {
   // Set up test environment
   process.env.NODE_ENV = 'test';
-  
-  // Mock the config loading
-  vi.mock('@playwright-orchestrator/shared', async () => {
-    const actual = await vi.importActual('@playwright-orchestrator/shared');
-    return {
-      ...actual,
-      loadConfig: () => mockConfig,
-      getConfig: () => mockConfig,
-    };
-  });
 });
 
 // Clean up after all tests

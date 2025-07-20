@@ -1,10 +1,10 @@
-import { 
-  getDatabase, 
-  logger, 
+import {
+  getDatabase,
+  logger,
   getConfig,
   Run,
   JobQueueItem,
-  RunWithEnvironment 
+  RunWithEnvironment,
 } from '@playwright-orchestrator/shared';
 import { PlaywrightRunner } from '../services/playwrightRunner';
 import { S3Service } from '../services/s3Service';
@@ -43,13 +43,16 @@ export class JobWorker {
       this.isRunning = true;
       this.startPolling();
 
-      logger.info('Job worker started successfully', { 
+      logger.info('Job worker started successfully', {
         workerId: this.workerId,
         pollingInterval: this.config.job_runner.polling_interval_ms,
         maxConcurrentJobs: this.config.job_runner.max_concurrent_jobs,
       });
     } catch (error) {
-      logger.error('Failed to start job worker', { workerId: this.workerId, error });
+      logger.error('Failed to start job worker', {
+        workerId: this.workerId,
+        error,
+      });
       throw error;
     }
   }
@@ -66,7 +69,7 @@ export class JobWorker {
     logger.info('Stopping job worker', { workerId: this.workerId });
 
     this.isRunning = false;
-    
+
     if (this.pollingInterval) {
       clearInterval(this.pollingInterval);
       this.pollingInterval = undefined;
@@ -95,7 +98,8 @@ export class JobWorker {
     }
 
     // Validate Playwright installation
-    const playwrightValid = await this.playwrightRunner.validatePlaywrightInstallation();
+    const playwrightValid =
+      await this.playwrightRunner.validatePlaywrightInstallation();
     if (!playwrightValid) {
       logger.warn('Playwright not found, attempting to install browsers');
       const browsersInstalled = await this.playwrightRunner.installBrowsers();
@@ -115,7 +119,10 @@ export class JobWorker {
       try {
         await this.pollForJobs();
       } catch (error) {
-        logger.error('Error during job polling', { workerId: this.workerId, error });
+        logger.error('Error during job polling', {
+          workerId: this.workerId,
+          error,
+        });
       }
     }, this.config.job_runner.polling_interval_ms);
   }
@@ -131,10 +138,11 @@ export class JobWorker {
     try {
       // Get current running job count for this worker
       const runningJobs = await this.getCurrentRunningJobs();
-      const availableSlots = this.config.job_runner.max_concurrent_jobs - runningJobs;
+      const availableSlots =
+        this.config.job_runner.max_concurrent_jobs - runningJobs;
 
       if (availableSlots <= 0) {
-        logger.debug('No available job slots', { 
+        logger.debug('No available job slots', {
           workerId: this.workerId,
           runningJobs,
           maxConcurrent: this.config.job_runner.max_concurrent_jobs,
@@ -151,16 +159,18 @@ export class JobWorker {
 
       // Process the job asynchronously
       this.processJob(job).catch(error => {
-        logger.error('Error processing job', { 
+        logger.error('Error processing job', {
           workerId: this.workerId,
           jobId: job.id,
           runId: job.run_id,
           error,
         });
       });
-
     } catch (error) {
-      logger.error('Error polling for jobs', { workerId: this.workerId, error });
+      logger.error('Error polling for jobs', {
+        workerId: this.workerId,
+        error,
+      });
     }
   }
 
@@ -169,7 +179,7 @@ export class JobWorker {
    */
   private async getNextJob(): Promise<JobQueueItem | null> {
     try {
-      const result = await this.db.transaction(async (client) => {
+      const result = await this.db.transaction(async client => {
         // Find the next available job
         const jobResult = await client.query<JobQueueItem>(
           `SELECT * FROM job_queue 
@@ -203,9 +213,9 @@ export class JobWorker {
       });
 
       if (result) {
-        logger.info('Job acquired', { 
+        logger.info('Job acquired', {
           workerId: this.workerId,
-          jobId: result.id, 
+          jobId: result.id,
           runId: result.run_id,
           attempts: result.attempts,
         });
@@ -213,7 +223,10 @@ export class JobWorker {
 
       return result;
     } catch (error) {
-      logger.error('Failed to get next job', { workerId: this.workerId, error });
+      logger.error('Failed to get next job', {
+        workerId: this.workerId,
+        error,
+      });
       return null;
     }
   }
@@ -223,9 +236,9 @@ export class JobWorker {
    */
   private async processJob(job: JobQueueItem): Promise<void> {
     const startTime = Date.now();
-    
+
     try {
-      logger.info('Processing job', { 
+      logger.info('Processing job', {
         workerId: this.workerId,
         jobId: job.id,
         runId: job.run_id,
@@ -244,19 +257,22 @@ export class JobWorker {
 
       // Execute Playwright tests
       const testResult = await this.playwrightRunner.executeTests(run);
-      
+
       // Upload trace file if available
       let traceUrl: string | undefined;
       if (testResult.traceFile) {
         try {
-          traceUrl = await this.s3Service.uploadTrace(testResult.traceFile, run.id);
-          logger.info('Trace uploaded', { 
+          traceUrl = await this.s3Service.uploadTrace(
+            testResult.traceFile,
+            run.id
+          );
+          logger.info('Trace uploaded', {
             runId: run.id,
             traceFile: testResult.traceFile,
             traceUrl,
           });
         } catch (error) {
-          logger.error('Failed to upload trace', { 
+          logger.error('Failed to upload trace', {
             runId: run.id,
             traceFile: testResult.traceFile,
             error,
@@ -267,14 +283,17 @@ export class JobWorker {
       // Upload test results if available
       if (testResult.reportDir) {
         try {
-          const resultUrls = await this.s3Service.uploadTestResults(testResult.reportDir, run.id);
-          logger.info('Test results uploaded', { 
+          const resultUrls = await this.s3Service.uploadTestResults(
+            testResult.reportDir,
+            run.id
+          );
+          logger.info('Test results uploaded', {
             runId: run.id,
             reportDir: testResult.reportDir,
             uploadedFiles: resultUrls.length,
           });
         } catch (error) {
-          logger.error('Failed to upload test results', { 
+          logger.error('Failed to upload test results', {
             runId: run.id,
             reportDir: testResult.reportDir,
             error,
@@ -287,7 +306,9 @@ export class JobWorker {
       await this.updateRunStatus(run.id, finalStatus, {
         end_time: new Date(),
         duration_ms: testResult.duration,
-        error_log: testResult.success ? undefined : (testResult.stderr || testResult.error),
+        error_log: testResult.success
+          ? undefined
+          : testResult.stderr || testResult.error,
         trace_url: traceUrl,
       });
 
@@ -304,10 +325,9 @@ export class JobWorker {
         totalDuration,
         traceUrl,
       });
-
     } catch (error) {
       const totalDuration = Date.now() - startTime;
-      
+
       logger.error('Job processing failed', {
         workerId: this.workerId,
         jobId: job.id,
@@ -324,22 +344,29 @@ export class JobWorker {
       });
 
       // Mark job as failed
-      await this.failJob(job.id, error instanceof Error ? error.message : String(error));
+      await this.failJob(
+        job.id,
+        error instanceof Error ? error.message : String(error)
+      );
     }
   }
 
   /**
    * Get run details with environment information
    */
-  private async getRunDetails(runId: string): Promise<RunWithEnvironment | null> {
+  private async getRunDetails(
+    runId: string
+  ): Promise<RunWithEnvironment | null> {
     try {
-      const result = await this.db.query<RunWithEnvironment & {
-        environment_name: string;
-        environment_base_url: string;
-        environment_concurrency_limit: number;
-        environment_created_at: Date;
-        environment_updated_at: Date;
-      }>(
+      const result = await this.db.query<
+        RunWithEnvironment & {
+          environment_name: string;
+          environment_base_url: string;
+          environment_concurrency_limit: number;
+          environment_created_at: Date;
+          environment_updated_at: Date;
+        }
+      >(
         `SELECT 
            r.*,
            e.name as environment_name,
@@ -444,7 +471,12 @@ export class JobWorker {
 
       logger.debug('Run status updated', { runId, status, updates });
     } catch (error) {
-      logger.error('Failed to update run status', { runId, status, updates, error });
+      logger.error('Failed to update run status', {
+        runId,
+        status,
+        updates,
+        error,
+      });
       throw error;
     }
   }
@@ -464,9 +496,16 @@ export class JobWorker {
         [jobId, this.workerId]
       );
 
-      logger.debug('Job marked as completed', { jobId, workerId: this.workerId });
+      logger.debug('Job marked as completed', {
+        jobId,
+        workerId: this.workerId,
+      });
     } catch (error) {
-      logger.error('Failed to complete job', { jobId, workerId: this.workerId, error });
+      logger.error('Failed to complete job', {
+        jobId,
+        workerId: this.workerId,
+        error,
+      });
       throw error;
     }
   }
@@ -476,7 +515,7 @@ export class JobWorker {
    */
   private async failJob(jobId: string, errorMessage: string): Promise<void> {
     try {
-      await this.db.transaction(async (client) => {
+      await this.db.transaction(async client => {
         // Get the current job to check attempts
         const jobResult = await client.query<JobQueueItem>(
           'SELECT * FROM job_queue WHERE id = $1 AND locked_by = $2',
@@ -484,7 +523,9 @@ export class JobWorker {
         );
 
         if (jobResult.rows.length === 0) {
-          throw new Error(`Job ${jobId} not found or not locked by worker ${this.workerId}`);
+          throw new Error(
+            `Job ${jobId} not found or not locked by worker ${this.workerId}`
+          );
         }
 
         const job = jobResult.rows[0];
@@ -503,10 +544,10 @@ export class JobWorker {
             [jobId, this.workerId, errorMessage]
           );
 
-          logger.warn('Job failed, will retry', { 
-            jobId, 
+          logger.warn('Job failed, will retry', {
+            jobId,
             workerId: this.workerId,
-            attempts: job.attempts, 
+            attempts: job.attempts,
             maxAttempts: job.max_attempts,
             error: errorMessage,
           });
@@ -523,16 +564,20 @@ export class JobWorker {
             [jobId, this.workerId, errorMessage]
           );
 
-          logger.error('Job permanently failed', { 
-            jobId, 
+          logger.error('Job permanently failed', {
+            jobId,
             workerId: this.workerId,
-            attempts: job.attempts, 
+            attempts: job.attempts,
             error: errorMessage,
           });
         }
       });
     } catch (error) {
-      logger.error('Failed to fail job', { jobId, workerId: this.workerId, error });
+      logger.error('Failed to fail job', {
+        jobId,
+        workerId: this.workerId,
+        error,
+      });
       throw error;
     }
   }
@@ -549,9 +594,11 @@ export class JobWorker {
 
       return parseInt(result.rows[0].count);
     } catch (error) {
-      logger.error('Failed to get current running jobs', { workerId: this.workerId, error });
+      logger.error('Failed to get current running jobs', {
+        workerId: this.workerId,
+        error,
+      });
       return 0;
     }
   }
 }
-

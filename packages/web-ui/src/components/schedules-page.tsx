@@ -19,14 +19,20 @@ import { Badge } from './ui/badge';
 import { Input } from './ui/input';
 import { Select } from './ui/select';
 import { Textarea } from './ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from './ui/dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from './ui/table';
 import { api } from '../lib/api';
 
@@ -81,7 +87,11 @@ export function SchedulesPage() {
   const [cronPreset, setCronPreset] = useState('');
   const queryClient = useQueryClient();
 
-  const { data: schedulesData, isLoading, refetch } = useQuery({
+  const {
+    data: schedulesData,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ['schedules'],
     queryFn: () => api.get('/api/schedules'),
   });
@@ -101,7 +111,7 @@ export function SchedulesPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) => 
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
       api.patch(`/api/schedules/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['schedules'] });
@@ -143,14 +153,14 @@ export function SchedulesPage() {
       test_command: schedule.test_command,
       custom_config: JSON.stringify(schedule.custom_config, null, 2),
     });
-    
+
     const preset = cronPresets.find(p => p.value === schedule.cron_string);
     setCronPreset(preset ? preset.value : '');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     let customConfig = {};
     if (formData.custom_config.trim()) {
       try {
@@ -180,7 +190,7 @@ export function SchedulesPage() {
   const handlePresetChange = (value: string) => {
     setCronPreset(value);
     if (value && value !== '') {
-      setFormData({...formData, cron_string: value});
+      setFormData({ ...formData, cron_string: value });
     }
   };
 
@@ -188,9 +198,9 @@ export function SchedulesPage() {
     // Simple cron parser for display purposes
     const parts = cron.split(' ');
     if (parts.length !== 5) return 'Invalid cron expression';
-    
+
     const [minute, hour, day, month, dayOfWeek] = parts;
-    
+
     if (cron === '*/5 * * * *') return 'Every 5 minutes';
     if (cron === '*/15 * * * *') return 'Every 15 minutes';
     if (cron === '*/30 * * * *') return 'Every 30 minutes';
@@ -200,89 +210,89 @@ export function SchedulesPage() {
     if (cron === '0 9 * * *') return 'Daily at 9:00 AM';
     if (cron === '0 18 * * *') return 'Daily at 6:00 PM';
     if (cron === '0 9 * * 1') return 'Weekly on Monday at 9:00 AM';
-    
+
     return `${minute} ${hour} ${day} ${month} ${dayOfWeek}`;
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className='p-6 space-y-6'>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className='flex items-center justify-between'>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Schedules</h1>
-          <p className="text-[hsl(var(--muted-foreground))]">
+          <h1 className='text-3xl font-bold tracking-tight'>Schedules</h1>
+          <p className='text-[hsl(var(--muted-foreground))]'>
             Manage automated test schedules and their configurations
           </p>
         </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" onClick={() => refetch()}>
-            <RefreshCw className="w-4 h-4 mr-2" />
+        <div className='flex items-center space-x-2'>
+          <Button variant='outline' onClick={() => refetch()}>
+            <RefreshCw className='w-4 h-4 mr-2' />
             Refresh
           </Button>
           <Button onClick={() => setShowCreateDialog(true)}>
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className='w-4 h-4 mr-2' />
             New Schedule
           </Button>
         </div>
       </div>
 
       {/* Stats Overview */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Schedules</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>
+              Total Schedules
+            </CardTitle>
+            <Calendar className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{schedules.length}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className='text-2xl font-bold'>{schedules.length}</div>
+            <p className='text-xs text-muted-foreground'>
               Configured schedules
             </p>
           </CardContent>
         </Card>
-        
+
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Schedules</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>
+              Active Schedules
+            </CardTitle>
+            <CheckCircle className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className='text-2xl font-bold'>
               {schedules.filter((s: Schedule) => s.is_enabled).length}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Currently enabled
-            </p>
+            <p className='text-xs text-muted-foreground'>Currently enabled</p>
           </CardContent>
         </Card>
-        
+
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Disabled Schedules</CardTitle>
-            <XCircle className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>
+              Disabled Schedules
+            </CardTitle>
+            <XCircle className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className='text-2xl font-bold'>
               {schedules.filter((s: Schedule) => !s.is_enabled).length}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Currently disabled
-            </p>
+            <p className='text-xs text-muted-foreground'>Currently disabled</p>
           </CardContent>
         </Card>
-        
+
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Environments</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Environments</CardTitle>
+            <Clock className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className='text-2xl font-bold'>
               {new Set(schedules.map((s: Schedule) => s.environment_id)).size}
             </div>
-            <p className="text-xs text-muted-foreground">
-              With schedules
-            </p>
+            <p className='text-xs text-muted-foreground'>With schedules</p>
           </CardContent>
         </Card>
       </div>
@@ -294,8 +304,8 @@ export function SchedulesPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <RefreshCw className="w-6 h-6 animate-spin mr-2" />
+            <div className='flex items-center justify-center py-8'>
+              <RefreshCw className='w-6 h-6 animate-spin mr-2' />
               Loading schedules...
             </div>
           ) : (
@@ -314,57 +324,64 @@ export function SchedulesPage() {
                 {schedules.map((schedule: Schedule) => (
                   <TableRow key={schedule.id}>
                     <TableCell>
-                      <div className="font-medium">{schedule.name}</div>
+                      <div className='font-medium'>{schedule.name}</div>
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{schedule.environment.name}</div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className='font-medium'>
+                          {schedule.environment.name}
+                        </div>
+                        <div className='text-sm text-muted-foreground'>
                           {schedule.environment.base_url}
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-mono text-sm">{schedule.cron_string}</div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className='font-mono text-sm'>
+                          {schedule.cron_string}
+                        </div>
+                        <div className='text-xs text-muted-foreground'>
                           {parseCronExpression(schedule.cron_string)}
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge className={schedule.is_enabled ? 
-                        'bg-green-500/10 text-green-500' : 
-                        'bg-gray-500/10 text-gray-500'
-                      }>
+                      <Badge
+                        className={
+                          schedule.is_enabled
+                            ? 'bg-green-500/10 text-green-500'
+                            : 'bg-gray-500/10 text-gray-500'
+                        }
+                      >
                         {schedule.is_enabled ? (
-                          <CheckCircle className="w-3 h-3 mr-1" />
+                          <CheckCircle className='w-3 h-3 mr-1' />
                         ) : (
-                          <XCircle className="w-3 h-3 mr-1" />
+                          <XCircle className='w-3 h-3 mr-1' />
                         )}
                         {schedule.is_enabled ? 'Enabled' : 'Disabled'}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <code className="text-sm bg-muted px-2 py-1 rounded">
+                      <code className='text-sm bg-muted px-2 py-1 rounded'>
                         {schedule.test_command}
                       </code>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center space-x-2">
+                      <div className='flex items-center space-x-2'>
                         <Button
-                          variant="ghost"
-                          size="sm"
+                          variant='ghost'
+                          size='sm'
                           onClick={() => handleEdit(schedule)}
                         >
-                          <Edit className="w-4 h-4" />
+                          <Edit className='w-4 h-4' />
                         </Button>
                         <Button
-                          variant="ghost"
-                          size="sm"
+                          variant='ghost'
+                          size='sm'
                           onClick={() => setDeleteSchedule(schedule)}
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className='w-4 h-4' />
                         </Button>
                       </div>
                     </TableCell>
@@ -377,9 +394,9 @@ export function SchedulesPage() {
       </Card>
 
       {/* Create/Edit Dialog */}
-      <Dialog 
-        open={showCreateDialog || editingSchedule !== null} 
-        onOpenChange={(open) => {
+      <Dialog
+        open={showCreateDialog || editingSchedule !== null}
+        onOpenChange={open => {
           if (!open) {
             setShowCreateDialog(false);
             setEditingSchedule(null);
@@ -387,111 +404,131 @@ export function SchedulesPage() {
           }
         }}
       >
-        <DialogContent className="max-w-2xl">
+        <DialogContent className='max-w-2xl'>
           <DialogHeader>
             <DialogTitle>
               {editingSchedule ? 'Edit Schedule' : 'Create Schedule'}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className='space-y-4'>
+            <div className='grid grid-cols-2 gap-4'>
               <div>
-                <label className="text-sm font-medium mb-2 block">Name</label>
+                <label className='text-sm font-medium mb-2 block'>Name</label>
                 <Input
                   value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  placeholder="Daily smoke tests"
+                  onChange={e =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  placeholder='Daily smoke tests'
                   required
                 />
               </div>
               <div>
-                <label className="text-sm font-medium mb-2 block">Environment</label>
+                <label className='text-sm font-medium mb-2 block'>
+                  Environment
+                </label>
                 <Select
                   value={formData.environment_id}
-                  onChange={(e) => setFormData({...formData, environment_id: e.target.value})}
+                  onChange={e =>
+                    setFormData({ ...formData, environment_id: e.target.value })
+                  }
                   required
                 >
-                  <option value="">Select environment</option>
+                  <option value=''>Select environment</option>
                   {environments.map((env: Environment) => (
-                    <option key={env.id} value={env.id}>{env.name}</option>
+                    <option key={env.id} value={env.id}>
+                      {env.name}
+                    </option>
                   ))}
                 </Select>
               </div>
             </div>
-            
+
             <div>
-              <label className="text-sm font-medium mb-2 block">Schedule Preset</label>
+              <label className='text-sm font-medium mb-2 block'>
+                Schedule Preset
+              </label>
               <Select
                 value={cronPreset}
-                onChange={(e) => handlePresetChange(e.target.value)}
+                onChange={e => handlePresetChange(e.target.value)}
               >
-                <option value="">Select a preset</option>
-                {cronPresets.map((preset) => (
+                <option value=''>Select a preset</option>
+                {cronPresets.map(preset => (
                   <option key={preset.value} value={preset.value}>
                     {preset.label}
                   </option>
                 ))}
               </Select>
             </div>
-            
+
             <div>
-              <label className="text-sm font-medium mb-2 block">
+              <label className='text-sm font-medium mb-2 block'>
                 Cron Expression
-                <span className="text-xs text-muted-foreground ml-2">
+                <span className='text-xs text-muted-foreground ml-2'>
                   (minute hour day month day-of-week)
                 </span>
               </label>
               <Input
                 value={formData.cron_string}
-                onChange={(e) => setFormData({...formData, cron_string: e.target.value})}
-                placeholder="0 9 * * *"
-                className="font-mono"
+                onChange={e =>
+                  setFormData({ ...formData, cron_string: e.target.value })
+                }
+                placeholder='0 9 * * *'
+                className='font-mono'
                 required
               />
             </div>
-            
+
             <div>
-              <label className="text-sm font-medium mb-2 block">Test Command</label>
+              <label className='text-sm font-medium mb-2 block'>
+                Test Command
+              </label>
               <Input
                 value={formData.test_command}
-                onChange={(e) => setFormData({...formData, test_command: e.target.value})}
-                placeholder="npx playwright test"
+                onChange={e =>
+                  setFormData({ ...formData, test_command: e.target.value })
+                }
+                placeholder='npx playwright test'
                 required
               />
             </div>
-            
+
             <div>
-              <label className="text-sm font-medium mb-2 block">
+              <label className='text-sm font-medium mb-2 block'>
                 Custom Config (JSON)
-                <span className="text-xs text-muted-foreground ml-2">
+                <span className='text-xs text-muted-foreground ml-2'>
                   Optional environment variables and settings
                 </span>
               </label>
               <Textarea
                 value={formData.custom_config}
-                onChange={(e) => setFormData({...formData, custom_config: e.target.value})}
+                onChange={e =>
+                  setFormData({ ...formData, custom_config: e.target.value })
+                }
                 placeholder='{"BASE_URL": "https://example.com", "TIMEOUT": 30000}'
-                className="font-mono text-sm"
+                className='font-mono text-sm'
                 rows={4}
               />
             </div>
-            
-            <div className="flex items-center space-x-2">
+
+            <div className='flex items-center space-x-2'>
               <input
-                type="checkbox"
-                id="is_enabled"
+                type='checkbox'
+                id='is_enabled'
                 checked={formData.is_enabled}
-                onChange={(e) => setFormData({...formData, is_enabled: e.target.checked})}
+                onChange={e =>
+                  setFormData({ ...formData, is_enabled: e.target.checked })
+                }
               />
-              <label htmlFor="is_enabled" className="text-sm font-medium">
+              <label htmlFor='is_enabled' className='text-sm font-medium'>
                 Enable schedule
               </label>
             </div>
-            
+
             <DialogFooter>
               <Button
-                type="button"
-                variant="outline"
+                type='button'
+                variant='outline'
                 onClick={() => {
                   setShowCreateDialog(false);
                   setEditingSchedule(null);
@@ -501,7 +538,7 @@ export function SchedulesPage() {
                 Cancel
               </Button>
               <Button
-                type="submit"
+                type='submit'
                 disabled={createMutation.isPending || updateMutation.isPending}
               >
                 {editingSchedule ? 'Update' : 'Create'}
@@ -512,28 +549,27 @@ export function SchedulesPage() {
       </Dialog>
 
       {/* Delete Dialog */}
-      <Dialog 
-        open={deleteSchedule !== null} 
-        onOpenChange={(open) => !open && setDeleteSchedule(null)}
+      <Dialog
+        open={deleteSchedule !== null}
+        onOpenChange={open => !open && setDeleteSchedule(null)}
       >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Schedule</DialogTitle>
           </DialogHeader>
           <p>
-            Are you sure you want to delete the schedule "{deleteSchedule?.name}"?
-            This action cannot be undone.
+            Are you sure you want to delete the schedule "{deleteSchedule?.name}
+            "? This action cannot be undone.
           </p>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteSchedule(null)}
-            >
+            <Button variant='outline' onClick={() => setDeleteSchedule(null)}>
               Cancel
             </Button>
             <Button
-              variant="destructive"
-              onClick={() => deleteSchedule && deleteMutation.mutate(deleteSchedule.id)}
+              variant='destructive'
+              onClick={() =>
+                deleteSchedule && deleteMutation.mutate(deleteSchedule.id)
+              }
               disabled={deleteMutation.isPending}
             >
               Delete

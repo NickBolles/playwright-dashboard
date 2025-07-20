@@ -9,12 +9,54 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WebhooksRouteImport } from './routes/webhooks'
+import { Route as SystemRouteImport } from './routes/system'
+import { Route as SchedulesRouteImport } from './routes/schedules'
+import { Route as RunsRouteImport } from './routes/runs'
 import { Route as MarkettingPageRouteImport } from './routes/marketting-page'
+import { Route as IntegrationsRouteImport } from './routes/integrations'
+import { Route as EnvironmentsRouteImport } from './routes/environments'
+import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as IndexRouteImport } from './routes/index'
 
+const WebhooksRoute = WebhooksRouteImport.update({
+  id: '/webhooks',
+  path: '/webhooks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SystemRoute = SystemRouteImport.update({
+  id: '/system',
+  path: '/system',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SchedulesRoute = SchedulesRouteImport.update({
+  id: '/schedules',
+  path: '/schedules',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RunsRoute = RunsRouteImport.update({
+  id: '/runs',
+  path: '/runs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MarkettingPageRoute = MarkettingPageRouteImport.update({
   id: '/marketting-page',
   path: '/marketting-page',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntegrationsRoute = IntegrationsRouteImport.update({
+  id: '/integrations',
+  path: '/integrations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EnvironmentsRoute = EnvironmentsRouteImport.update({
+  id: '/environments',
+  path: '/environments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnalyticsRoute = AnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -25,37 +67,142 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/analytics': typeof AnalyticsRoute
+  '/environments': typeof EnvironmentsRoute
+  '/integrations': typeof IntegrationsRoute
   '/marketting-page': typeof MarkettingPageRoute
+  '/runs': typeof RunsRoute
+  '/schedules': typeof SchedulesRoute
+  '/system': typeof SystemRoute
+  '/webhooks': typeof WebhooksRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/analytics': typeof AnalyticsRoute
+  '/environments': typeof EnvironmentsRoute
+  '/integrations': typeof IntegrationsRoute
   '/marketting-page': typeof MarkettingPageRoute
+  '/runs': typeof RunsRoute
+  '/schedules': typeof SchedulesRoute
+  '/system': typeof SystemRoute
+  '/webhooks': typeof WebhooksRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/analytics': typeof AnalyticsRoute
+  '/environments': typeof EnvironmentsRoute
+  '/integrations': typeof IntegrationsRoute
   '/marketting-page': typeof MarkettingPageRoute
+  '/runs': typeof RunsRoute
+  '/schedules': typeof SchedulesRoute
+  '/system': typeof SystemRoute
+  '/webhooks': typeof WebhooksRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/marketting-page'
+  fullPaths:
+    | '/'
+    | '/analytics'
+    | '/environments'
+    | '/integrations'
+    | '/marketting-page'
+    | '/runs'
+    | '/schedules'
+    | '/system'
+    | '/webhooks'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/marketting-page'
-  id: '__root__' | '/' | '/marketting-page'
+  to:
+    | '/'
+    | '/analytics'
+    | '/environments'
+    | '/integrations'
+    | '/marketting-page'
+    | '/runs'
+    | '/schedules'
+    | '/system'
+    | '/webhooks'
+  id:
+    | '__root__'
+    | '/'
+    | '/analytics'
+    | '/environments'
+    | '/integrations'
+    | '/marketting-page'
+    | '/runs'
+    | '/schedules'
+    | '/system'
+    | '/webhooks'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AnalyticsRoute: typeof AnalyticsRoute
+  EnvironmentsRoute: typeof EnvironmentsRoute
+  IntegrationsRoute: typeof IntegrationsRoute
   MarkettingPageRoute: typeof MarkettingPageRoute
+  RunsRoute: typeof RunsRoute
+  SchedulesRoute: typeof SchedulesRoute
+  SystemRoute: typeof SystemRoute
+  WebhooksRoute: typeof WebhooksRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/webhooks': {
+      id: '/webhooks'
+      path: '/webhooks'
+      fullPath: '/webhooks'
+      preLoaderRoute: typeof WebhooksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/system': {
+      id: '/system'
+      path: '/system'
+      fullPath: '/system'
+      preLoaderRoute: typeof SystemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/schedules': {
+      id: '/schedules'
+      path: '/schedules'
+      fullPath: '/schedules'
+      preLoaderRoute: typeof SchedulesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/runs': {
+      id: '/runs'
+      path: '/runs'
+      fullPath: '/runs'
+      preLoaderRoute: typeof RunsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/marketting-page': {
       id: '/marketting-page'
       path: '/marketting-page'
       fullPath: '/marketting-page'
       preLoaderRoute: typeof MarkettingPageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/integrations': {
+      id: '/integrations'
+      path: '/integrations'
+      fullPath: '/integrations'
+      preLoaderRoute: typeof IntegrationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/environments': {
+      id: '/environments'
+      path: '/environments'
+      fullPath: '/environments'
+      preLoaderRoute: typeof EnvironmentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analytics': {
+      id: '/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AnalyticsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -70,7 +217,14 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AnalyticsRoute: AnalyticsRoute,
+  EnvironmentsRoute: EnvironmentsRoute,
+  IntegrationsRoute: IntegrationsRoute,
   MarkettingPageRoute: MarkettingPageRoute,
+  RunsRoute: RunsRoute,
+  SchedulesRoute: SchedulesRoute,
+  SystemRoute: SystemRoute,
+  WebhooksRoute: WebhooksRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

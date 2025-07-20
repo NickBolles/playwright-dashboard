@@ -29,7 +29,7 @@ export class MigrationManager {
         applied_at TIMESTAMPTZ DEFAULT NOW()
       );
     `;
-    
+
     await this.db.query(createTableSQL);
     logger.info('Migrations table ensured');
   }
@@ -43,14 +43,15 @@ export class MigrationManager {
 
   private getMigrationFiles(): Migration[] {
     const migrationsDir = path.join(__dirname, 'migrations');
-    
+
     // If migrations directory doesn't exist, create it and return empty array
     if (!fs.existsSync(migrationsDir)) {
       fs.mkdirSync(migrationsDir, { recursive: true });
       return [];
     }
 
-    const files = fs.readdirSync(migrationsDir)
+    const files = fs
+      .readdirSync(migrationsDir)
       .filter(file => file.endsWith('.sql'))
       .sort();
 
@@ -58,7 +59,7 @@ export class MigrationManager {
       const filePath = path.join(migrationsDir, file);
       const sql = fs.readFileSync(filePath, 'utf8');
       const name = path.basename(file, '.sql');
-      
+
       return {
         id: name,
         name,
@@ -70,10 +71,10 @@ export class MigrationManager {
   public async runMigrations(): Promise<void> {
     try {
       await this.ensureMigrationsTable();
-      
-      const appliedMigrations = await getAppliedMigrations();
+
+      const appliedMigrations = await this.getAppliedMigrations();
       const migrationFiles = this.getMigrationFiles();
-      
+
       // If no migration files exist, run the initial schema
       if (migrationFiles.length === 0) {
         await this.runInitialSchema();
@@ -104,15 +105,15 @@ export class MigrationManager {
 
   private async runInitialSchema(): Promise<void> {
     const schemaPath = path.join(__dirname, 'schema.sql');
-    
+
     if (!fs.existsSync(schemaPath)) {
       logger.warn('No schema.sql file found, skipping initial schema setup');
       return;
     }
 
     const schemaSql = fs.readFileSync(schemaPath, 'utf8');
-    
-    await this.db.transaction(async (client) => {
+
+    await this.db.transaction(async client => {
       // Split SQL by semicolons and execute each statement
       const statements = schemaSql
         .split(';')
@@ -124,10 +125,10 @@ export class MigrationManager {
       }
 
       // Record this as the initial migration
-      await client.query(
-        'INSERT INTO migrations (name, sql) VALUES ($1, $2)',
-        ['001_initial_schema', schemaSql]
-      );
+      await client.query('INSERT INTO migrations (name, sql) VALUES ($1, $2)', [
+        '001_initial_schema',
+        schemaSql,
+      ]);
     });
 
     logger.info('Initial schema applied successfully');
@@ -135,16 +136,16 @@ export class MigrationManager {
 
   private async runMigration(migration: Migration): Promise<void> {
     logger.info(`Running migration: ${migration.name}`);
-    
-    await this.db.transaction(async (client) => {
+
+    await this.db.transaction(async client => {
       // Execute the migration SQL
       await client.query(migration.sql);
-      
+
       // Record the migration as applied
-      await client.query(
-        'INSERT INTO migrations (name, sql) VALUES ($1, $2)',
-        [migration.name, migration.sql]
-      );
+      await client.query('INSERT INTO migrations (name, sql) VALUES ($1, $2)', [
+        migration.name,
+        migration.sql,
+      ]);
     });
 
     logger.info(`Migration completed: ${migration.name}`);
@@ -153,28 +154,28 @@ export class MigrationManager {
   public async rollbackMigration(migrationName: string): Promise<void> {
     // This is a basic rollback - in production you'd want more sophisticated rollback handling
     logger.warn(`Rolling back migration: ${migrationName}`);
-    
-    await this.db.query(
-      'DELETE FROM migrations WHERE name = $1',
-      [migrationName]
-    );
-    
+
+    await this.db.query('DELETE FROM migrations WHERE name = $1', [
+      migrationName,
+    ]);
+
     logger.info(`Migration rollback completed: ${migrationName}`);
   }
 
   public async getMigrationStatus(): Promise<Migration[]> {
     await this.ensureMigrationsTable();
-    
+
     const appliedMigrations = await this.db.query<{
       name: string;
       applied_at: Date;
     }>('SELECT name, applied_at FROM migrations ORDER BY applied_at');
-    
+
     const migrationFiles = this.getMigrationFiles();
-    
+
     return migrationFiles.map(file => ({
       ...file,
-      applied_at: appliedMigrations.rows.find(m => m.name === file.name)?.applied_at,
+      applied_at: appliedMigrations.rows.find(m => m.name === file.name)
+        ?.applied_at,
     }));
   }
 }
@@ -192,9 +193,8 @@ if (require.main === module) {
       logger.info('Migration process completed');
       process.exit(0);
     })
-    .catch((error) => {
+    .catch(error => {
       logger.error('Migration process failed', error);
       process.exit(1);
     });
 }
-
