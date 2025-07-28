@@ -102,6 +102,9 @@ jobs:
             if [ -f "$package/dist/index.js" ]; then
               echo "Analyzing $package..."
               du -h "$package/dist/index.js"
+            elif [ -d "$package/dist/assets" ]; then
+              echo "Analyzing $package (web assets)..."
+              du -h "$package/dist/assets"/*
             fi
           done
           
@@ -119,9 +122,19 @@ jobs:
               const packages = fs.readdirSync('packages');
               for (const pkg of packages) {
                 const distPath = `packages/${pkg}/dist/index.js`;
+                const assetsPath = `packages/${pkg}/dist/assets`;
+                
                 if (fs.existsSync(distPath)) {
                   const size = execSync(`du -h ${distPath}`, { encoding: 'utf8' }).trim();
                   bundleInfo += `- **${pkg}**: ${size}\n`;
+                } else if (fs.existsSync(assetsPath)) {
+                  const assets = fs.readdirSync(assetsPath);
+                  bundleInfo += `- **${pkg}** (web assets):\n`;
+                  for (const asset of assets) {
+                    const assetPath = `${assetsPath}/${asset}`;
+                    const size = execSync(`du -h ${assetPath}`, { encoding: 'utf8' }).trim();
+                    bundleInfo += `  - ${asset}: ${size}\n`;
+                  }
                 }
               }
             } catch (error) {
