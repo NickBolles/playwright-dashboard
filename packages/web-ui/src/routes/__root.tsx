@@ -3,6 +3,7 @@ import React from 'react';
 import { Sidebar } from '@/components/sidebar';
 import { ThemeProvider } from '@/components/theme-provider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ClerkProvider } from '@clerk/tanstack-react-start';
 import {
   createRootRoute,
   HeadContent,
@@ -35,16 +36,18 @@ export const Route = createRootRoute({
 function RootComponent() {
   return (
     <RootDocument>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider defaultTheme='dark' storageKey='ui-theme'>
-          <div className='flex h-screen bg-[hsl(var(--background))]'>
-            <Sidebar />
-            <main className='flex-1 overflow-y-auto p-8'>
-              <Outlet />
-            </main>
-          </div>
-        </ThemeProvider>
-      </QueryClientProvider>
+      <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider defaultTheme='dark' storageKey='ui-theme'>
+            <div className='flex h-screen bg-background'>
+              <Sidebar />
+              <main className='flex-1 overflow-y-auto p-8'>
+                <Outlet />
+              </main>
+            </div>
+          </ThemeProvider>
+        </QueryClientProvider>
+      </ClerkProvider>
     </RootDocument>
   );
 }
@@ -55,7 +58,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
       <head>
         <HeadContent />
       </head>
-      <body className='bg-[hsl(var(--background))] text-[hsl(var(--foreground))]'>
+      <body className='bg-background text-foreground'>
         {children}
         <Scripts />
       </body>

@@ -80,7 +80,7 @@ export function Dashboard() {
       <div className='flex items-center justify-between'>
         <div>
           <h1 className='text-3xl font-bold tracking-tight'>Dashboard</h1>
-          <p className='text-[hsl(var(--muted-foreground))]'>
+          <p className='text-muted-foreground'>
             Overview of your Playwright test orchestration
           </p>
         </div>
@@ -99,7 +99,7 @@ export function Dashboard() {
       {/* Stats Cards */}
       <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
         {statCards.map(stat => (
-          <Card key={stat.title} className='futuristic-card'>
+          <Card key={stat.title} className='clean-card-hover'>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
               <CardTitle className='text-sm font-medium'>
                 {stat.title}
@@ -108,7 +108,7 @@ export function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className='text-2xl font-bold'>{stat.value}</div>
-              <p className='text-xs text-[hsl(var(--muted-foreground))]'>
+              <p className='text-xs text-muted-foreground'>
                 {stat.description}
               </p>
               <div className='flex items-center mt-2'>
@@ -123,7 +123,7 @@ export function Dashboard() {
       {/* Charts and Recent Activity */}
       <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-3'>
         {/* Test Stats Chart */}
-        <Card className='futuristic-card md:col-span-2'>
+        <Card className='clean-card md:col-span-2'>
           <CardHeader>
             <CardTitle>Test Execution Trends</CardTitle>
             <CardDescription>
@@ -136,7 +136,7 @@ export function Dashboard() {
         </Card>
 
         {/* Environment Status */}
-        <Card className='futuristic-card'>
+        <Card className='clean-card'>
           <CardHeader>
             <CardTitle>Environment Status</CardTitle>
             <CardDescription>
@@ -150,7 +150,7 @@ export function Dashboard() {
       </div>
 
       {/* Recent Test Runs */}
-      <Card className='futuristic-card'>
+      <Card className='clean-card'>
         <CardHeader>
           <CardTitle>Recent Test Runs</CardTitle>
           <CardDescription>
@@ -164,7 +164,7 @@ export function Dashboard() {
 
       {/* Quick Actions */}
       <div className='grid gap-4 md:grid-cols-3'>
-        <Card className='futuristic-card'>
+        <Card className='clean-card'>
           <CardHeader>
             <CardTitle className='flex items-center'>
               <Zap className='w-5 h-5 mr-2' />
@@ -187,7 +187,7 @@ export function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className='futuristic-card'>
+        <Card className='clean-card'>
           <CardHeader>
             <CardTitle>System Health</CardTitle>
           </CardHeader>
@@ -221,7 +221,7 @@ export function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className='futuristic-card'>
+        <Card className='clean-card'>
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
           </CardHeader>
