@@ -3,122 +3,113 @@
 
 @layer base {
   :root {
-    --background: 222 28% 10%;
-    --foreground: 220 14% 96%;
-    --card: 222 28% 12%;
-    --card-foreground: 220 14% 96%;
-    --popover: 222 28% 12%;
-    --popover-foreground: 220 14% 96%;
-    --primary: 245 100% 70%;
-    --primary-foreground: 222 28% 12%;
-    --secondary: 222 14% 20%;
-    --secondary-foreground: 220 14% 96%;
-    --muted: 222 14% 18%;
-    --muted-foreground: 220 10% 60%;
-    --accent: 278 100% 70%;
-    --accent-foreground: 222 28% 12%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 220 14% 96%;
-    --border: 220 14% 20%;
-    --input: 220 14% 20%;
-    --ring: 245 100% 70%;
-    --radius: 0.75rem;
+    /* Clean, minimal color palette inspired by devin.ai */
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 6%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 6%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 142 76% 36%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 142 76% 36%;
+    --radius: 0.5rem;
   }
 
   .dark {
-    --background: 222 28% 10%;
-    --foreground: 220 14% 96%;
-    --card: 222 28% 12%;
-    --card-foreground: 220 14% 96%;
-    --popover: 222 28% 12%;
-    --popover-foreground: 220 14% 96%;
-    --primary: 245 100% 70%;
-    --primary-foreground: 222 28% 12%;
-    --secondary: 222 14% 20%;
-    --secondary-foreground: 220 14% 96%;
-    --muted: 222 14% 18%;
-    --muted-foreground: 220 10% 60%;
-    --accent: 278 100% 70%;
-    --accent-foreground: 222 28% 12%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 220 14% 96%;
-    --border: 220 14% 20%;
-    --input: 220 14% 20%;
-    --ring: 245 100% 70%;
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 6%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 6%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 142 76% 36%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 142 76% 36%;
   }
 }
 
 @layer base {
   * {
     font-family: 'Inter', system-ui, sans-serif;
-    /* @apply border; */
-    /* border-color: hsl(var(--border)); */
+    @apply border-border;
   }
+  
   body {
-    @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))];
-    font-feature-settings:
-      'rlig' 1,
-      'calt' 1;
-    background: linear-gradient(
-      120deg,
-      hsl(var(--background)),
-      hsl(var(--card)) 80%
-    );
+    @apply bg-background text-foreground;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
 @layer components {
-  .glass-effect {
-    @apply bg-[rgba(255,255,255,0.1)] backdrop-blur-md border border-[rgba(255,255,255,0.2)];
+  /* Clean card component */
+  .clean-card {
+    @apply bg-card border border-border rounded-lg shadow-sm;
   }
 
-  .glass-effect-dark {
-    @apply bg-[rgba(0,0,0,0.2)] backdrop-blur-md border border-[rgba(255,255,255,0.1)];
+  .clean-card-hover {
+    @apply clean-card hover:shadow-md transition-shadow duration-200;
   }
 
-  .gradient-border {
-    @apply relative;
-  }
-
-  .gradient-border::before {
-    content: '';
-    @apply absolute inset-0 rounded-lg p-[1px] bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500;
-    mask:
-      linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    mask-composite: exclude;
-  }
-
-  .futuristic-card {
-    @apply relative overflow-hidden rounded-lg border border-[hsl(var(--border)/0.5)] bg-[hsl(var(--card)/0.5)] backdrop-blur-sm;
-  }
-
-  .futuristic-card::before {
-    content: '';
-    @apply absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary)/0.2)] via-transparent to-[hsl(var(--secondary)/0.2)] opacity-0 transition-opacity duration-300;
-  }
-
-  .futuristic-card:hover::before {
-    @apply opacity-100;
-  }
-
+  /* Status indicators with clean styling */
   .status-success {
-    @apply bg-green-500/20 text-green-400 border-green-500/30;
+    @apply bg-green-500/10 text-green-400 border border-green-500/20 rounded-full px-2 py-1 text-xs font-medium;
   }
 
   .status-failed {
-    @apply bg-red-500/20 text-red-400 border-red-500/30;
+    @apply bg-red-500/10 text-red-400 border border-red-500/20 rounded-full px-2 py-1 text-xs font-medium;
   }
 
   .status-running {
-    @apply bg-blue-500/20 text-blue-400 border-blue-500/30 animate-pulse;
+    @apply bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full px-2 py-1 text-xs font-medium;
   }
 
   .status-queued {
-    @apply bg-yellow-500/20 text-yellow-400 border-yellow-500/30;
+    @apply bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 rounded-full px-2 py-1 text-xs font-medium;
   }
 
   .status-cancelled {
-    @apply bg-gray-500/20 text-gray-400 border-gray-500/30;
+    @apply bg-muted text-muted-foreground border border-border rounded-full px-2 py-1 text-xs font-medium;
+  }
+
+  /* Clean button variants */
+  .btn-clean {
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply btn-clean bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2;
+  }
+
+  .btn-secondary {
+    @apply btn-clean bg-secondary text-secondary-foreground hover:bg-secondary/80 h-10 px-4 py-2;
+  }
+
+  .btn-ghost {
+    @apply btn-clean hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2;
   }
 }
