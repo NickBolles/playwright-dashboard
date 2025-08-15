@@ -18,6 +18,10 @@ import { Route as IntegrationsRouteImport } from './routes/integrations'
 import { Route as EnvironmentsRouteImport } from './routes/environments'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as SignInRouteImport } from './routes/sign-in'
+import { Route as SignUpRouteImport } from './routes/sign-up'
 
 const WebhooksRoute = WebhooksRouteImport.update({
   id: '/webhooks',
@@ -64,26 +68,54 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/dashboard/',
+  path: '/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const SignInRoute = SignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignUpRoute = SignUpRouteImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
+  '/dashboard': typeof DashboardRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/environments': typeof EnvironmentsRoute
   '/integrations': typeof IntegrationsRoute
   '/marketting-page': typeof MarkettingPageRoute
   '/runs': typeof RunsRoute
   '/schedules': typeof SchedulesRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
   '/system': typeof SystemRoute
   '/webhooks': typeof WebhooksRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
+  '/dashboard': typeof DashboardRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/environments': typeof EnvironmentsRoute
   '/integrations': typeof IntegrationsRoute
   '/marketting-page': typeof MarkettingPageRoute
   '/runs': typeof RunsRoute
   '/schedules': typeof SchedulesRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
   '/system': typeof SystemRoute
   '/webhooks': typeof WebhooksRoute
 }
@@ -91,11 +123,15 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
+  '/dashboard': typeof DashboardRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/environments': typeof EnvironmentsRoute
   '/integrations': typeof IntegrationsRoute
   '/marketting-page': typeof MarkettingPageRoute
   '/runs': typeof RunsRoute
   '/schedules': typeof SchedulesRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
   '/system': typeof SystemRoute
   '/webhooks': typeof WebhooksRoute
 }
@@ -104,33 +140,45 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/analytics'
+    | '/dashboard'
+    | '/dashboard/'
     | '/environments'
     | '/integrations'
     | '/marketting-page'
     | '/runs'
     | '/schedules'
+    | '/sign-in'
+    | '/sign-up'
     | '/system'
     | '/webhooks'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/analytics'
+    | '/dashboard'
+    | '/dashboard/'
     | '/environments'
     | '/integrations'
     | '/marketting-page'
     | '/runs'
     | '/schedules'
+    | '/sign-in'
+    | '/sign-up'
     | '/system'
     | '/webhooks'
   id:
     | '__root__'
     | '/'
     | '/analytics'
+    | '/dashboard'
+    | '/dashboard/'
     | '/environments'
     | '/integrations'
     | '/marketting-page'
     | '/runs'
     | '/schedules'
+    | '/sign-in'
+    | '/sign-up'
     | '/system'
     | '/webhooks'
   fileRoutesById: FileRoutesById
@@ -138,13 +186,20 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnalyticsRoute: typeof AnalyticsRoute
+  DashboardRoute: typeof DashboardRoute
   EnvironmentsRoute: typeof EnvironmentsRoute
   IntegrationsRoute: typeof IntegrationsRoute
   MarkettingPageRoute: typeof MarkettingPageRoute
   RunsRoute: typeof RunsRoute
   SchedulesRoute: typeof SchedulesRoute
+  SignInRoute: typeof SignInRoute
+  SignUpRoute: typeof SignUpRoute
   SystemRoute: typeof SystemRoute
   WebhooksRoute: typeof WebhooksRoute
+}
+
+export interface DashboardRouteChildren {
+  DashboardIndexRoute: typeof DashboardIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -161,6 +216,20 @@ declare module '@tanstack/react-router' {
       path: '/system'
       fullPath: '/system'
       preLoaderRoute: typeof SystemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-up': {
+      id: '/sign-up'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof SignUpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-in': {
+      id: '/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof SignInRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/schedules': {
@@ -198,6 +267,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EnvironmentsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/analytics': {
       id: '/analytics'
       path: '/analytics'
@@ -215,17 +298,28 @@ declare module '@tanstack/react-router' {
   }
 }
 
+const dashboardRouteChildren: DashboardRouteChildren = {
+  DashboardIndexRoute: DashboardIndexRoute,
+}
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalyticsRoute: AnalyticsRoute,
+  DashboardRoute: DashboardRoute,
   EnvironmentsRoute: EnvironmentsRoute,
   IntegrationsRoute: IntegrationsRoute,
   MarkettingPageRoute: MarkettingPageRoute,
   RunsRoute: RunsRoute,
   SchedulesRoute: SchedulesRoute,
+  SignInRoute: SignInRoute,
+  SignUpRoute: SignUpRoute,
   SystemRoute: SystemRoute,
   WebhooksRoute: WebhooksRoute,
 }
+
+DashboardRoute._addFileChildren(dashboardRouteChildren)
+
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+

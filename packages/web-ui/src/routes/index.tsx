@@ -7,7 +7,7 @@ export const Route = createFileRoute('/')({
     
     if (userId) {
       throw redirect({
-        to: '/_authed',
+        to: '/dashboard',
       });
     } else {
       throw redirect({

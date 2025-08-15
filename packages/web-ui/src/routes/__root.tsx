@@ -39,12 +39,7 @@ function RootComponent() {
       <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}>
         <QueryClientProvider client={queryClient}>
           <ThemeProvider defaultTheme='dark' storageKey='ui-theme'>
-            <div className='flex h-screen bg-background'>
-              <Sidebar />
-              <main className='flex-1 overflow-y-auto p-8'>
-                <Outlet />
-              </main>
-            </div>
+            <Outlet />
           </ThemeProvider>
         </QueryClientProvider>
       </ClerkProvider>

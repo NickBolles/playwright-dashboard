@@ -14,14 +14,14 @@ import {
 import { cn } from '../lib/utils';
 
 const navigation = [
-  { name: 'Dashboard', href: '/_authed', icon: LayoutDashboard },
-  { name: 'Test Runs', href: '/_authed/runs', icon: Play },
-  { name: 'Schedules', href: '/_authed/schedules', icon: Clock },
-  { name: 'Environments', href: '/_authed/environments', icon: Settings },
-  { name: 'Analytics', href: '/_authed/analytics', icon: BarChart3 },
-  { name: 'Webhooks', href: '/_authed/webhooks', icon: Zap },
-  { name: 'Integrations', href: '/_authed/integrations', icon: GitBranch },
-  { name: 'System', href: '/_authed/system', icon: Activity },
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Test Runs', href: '/dashboard/runs', icon: Play },
+  { name: 'Schedules', href: '/dashboard/schedules', icon: Clock },
+  { name: 'Environments', href: '/dashboard/environments', icon: Settings },
+  { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
+  { name: 'Webhooks', href: '/dashboard/webhooks', icon: Zap },
+  { name: 'Integrations', href: '/dashboard/integrations', icon: GitBranch },
+  { name: 'System', href: '/dashboard/system', icon: Activity },
 ];
 
 export function Sidebar() {
